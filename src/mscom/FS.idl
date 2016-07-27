@@ -1,0 +1,64 @@
+import "unknwn.idl";
+
+interface IDirectory;
+interface IFile;
+
+[
+    object,
+    uuid(9ffa7dea-5411-11e6-892f-08002766fdaa),
+	local
+]
+interface IFs : IUnknown
+{
+	HRESULT Open([in] BSTR fileName,
+				[in] DWORD desiredAccess,
+				[out] IDirectory** root);
+}
+
+[
+	object,
+	uuid(5d8f7fa2-5414-11e6-9d34-08002766fdaa),
+	local
+]
+interface IDirectoryEnumerator : IUnknown
+{
+	typedef struct tagFileAttributes
+	{
+		DWORD dummy;
+	} FileAttributes;
+	HRESULT Next(BSTR** name, FileAttributes* attributes);
+};
+
+[
+	object,
+	uuid(8719e9ee-5413-11e6-a28c-08002766fdaa),
+	local
+]
+interface IDirectory : IUnknown
+{
+	HRESULT GetParent([out] IDirectory** parent);
+	HRESULT OpenDirectory([in] BSTR name, [out] IDirectory** dir);
+	HRESULT OpenFile([in] BSTR name, [out] IFile** file);
+	HRESULT RemoveFile([in] BSTR name);
+	HRESULT RemoveDir([in] BSTR name);
+	HRESULT Enumerate([out] IDirectoryEnumerator** direnum);
+}
+
+[
+	object,
+	uuid(45bea892-5416-11e6-be20-08002766fdaa),
+	local
+]
+interface IFile : IUnknown
+{
+	HRESULT Read([in, size_is(buffSize)] BYTE* buff,
+				[in] DWORD buffSize, [out] DWORD* read);
+	HRESULT Write([in, size_is(buffSize)] BYTE* buff, DWORD buffSize);
+	HRESULT Seek([in] DWORD pos);
+	HRESULT Tell([out] DWORD* pos);
+	HRESULT GetSize([out] DWORD* size);
+	HRESULT Resize([in] DWORD newSize);
+}
+
+
+

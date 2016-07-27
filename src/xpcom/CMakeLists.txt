@@ -1,0 +1,1 @@
+message("XPCOM component isn't implemented yet.")
