@@ -1,5 +1,3 @@
-Virtual file system with COM/XPCOM wrapper
-
 Library consists in three main parts:
 
 * libfsbox - cross-platform library, that implements virtual FS inside a file. This code is intended to be linked as a static library.
