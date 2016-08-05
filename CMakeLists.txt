@@ -1,9 +1,14 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 2.4)
 project(fs-in-a-box)
 
-add_subdirectory(src/libfsbox)
+include_directories($ENV{BOOST_ROOT})
+include_directories(src)
+set_property(GLOBAL PROPERTY CXX_STANDARD 11)
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+add_subdirectory(src/libfsbox)
+add_subdirectory(test)
+
+if (${WIN32})
 	add_subdirectory(src/mscom)
 else()
 	add_subdirectory(src/xpcom)
