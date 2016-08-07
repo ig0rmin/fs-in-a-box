@@ -43,7 +43,6 @@ void LogMsg(LogLevel lvl, const char* function, long line, const char* msg, ...)
 #ifdef _WIN32
 	OutputDebugStringA(logMsg);
 #else
-	//TODO: POSIX support
 	printf("%s\n", logMsg);
 #endif
 }
