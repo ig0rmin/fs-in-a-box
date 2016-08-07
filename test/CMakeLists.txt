@@ -1,5 +1,5 @@
 
-include_directories(.) # solves problem with include "gtest/gest.h" from "gmock/gmock.h"
+include_directories(.) # solves problem with include "gtest/gest.h" from gmock/gmock.h
 
 aux_source_directory(. SOURCE_FILES)
 
