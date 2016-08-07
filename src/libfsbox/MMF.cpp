@@ -50,7 +50,8 @@ bool MemoryMappedFile::Open(const std::string& fileName, stream_offset offset)
 	_fileOffset = (offset / _alignment) * _alignment;
 	try
 	{
-		_mf.open(fileName, mapped_file_base::readwrite, viewSize, _fileOffset);
+		LOG_DEBUG("About to open: %s, %d", fileName.c_str(), viewSize);
+		_mf.open(fileName, BOOST_IOS::in | BOOST_IOS::out, viewSize, _fileOffset);
 	}
 	catch(const std::ios::failure& ex)
 	{
@@ -115,7 +116,7 @@ bool MemoryMappedFile::Remap(stream_offset pos)
 {
 	if (pos >= _fileSize)
 	{
-		LOG_ERROR("Trying to rewind outside of file");
+		LOG_ERROR("%s", "Trying to rewind outside of file");
 		return false;
 	}
 	Close();
