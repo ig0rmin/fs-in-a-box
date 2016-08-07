@@ -44,6 +44,7 @@ void LogMsg(LogLevel lvl, const char* function, long line, const char* msg, ...)
 	OutputDebugStringA(logMsg);
 #else
 	//TODO: POSIX support
+	printf("%s\n", logMsg);
 #endif
 }
 
