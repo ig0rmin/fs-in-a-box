@@ -99,7 +99,7 @@ char * MemoryMappedFile::GetData()
 
 size_t MemoryMappedFile::GetDataSize() const
 {
-	return _mf.size();
+	return std::min(_memViewSize, _mf.size());
 }
 
 stream_offset MemoryMappedFile::GetFileSize() const
