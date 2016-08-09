@@ -7,47 +7,47 @@
 namespace BlockTypes
 {
 
-template <typename T>
-BlockType GetBlockType()
-{
-	return BlockType::Unknown;
-}
+	template <typename T>
+	BlockType GetBlockType()
+	{
+		return BlockType::Unknown;
+	}
 
-template <>
-BlockType GetBlockType<ContainerHeader>()
-{
-	return BlockType::ContainerHeader;
-}
+	template <>
+	BlockType GetBlockType<ContainerHeader>()
+	{
+		return BlockType::ContainerHeader;
+	}
 
-template <>
-BlockType GetBlockType<FreeBlock>()
-{
-	return BlockType::FreeBlock;
-}
+	template <>
+	BlockType GetBlockType<FreeBlock>()
+	{
+		return BlockType::FreeBlock;
+	}
 
-template <>
-BlockType GetBlockType<DirHeader>()
-{
-	return BlockType::DirHeader;
-}
+	template <>
+	BlockType GetBlockType<DirHeader>()
+	{
+		return BlockType::DirHeader;
+	}
 
-template <>
-BlockType GetBlockType<DirEntry>()
-{
-	return BlockType::DirEntry;
-}
+	template <>
+	BlockType GetBlockType<DirEntry>()
+	{
+		return BlockType::DirEntry;
+	}
 
-template <>
-BlockType GetBlockType<FileHeader>()
-{
-	return BlockType::FileHeader;
-}
+	template <>
+	BlockType GetBlockType<FileHeader>()
+	{
+		return BlockType::FileHeader;
+	}
 
-template <>
-BlockType GetBlockType<FileEntry>()
-{
-	return BlockType::FileEntry;
-}
+	template <>
+	BlockType GetBlockType<FileEntry>()
+	{
+		return BlockType::FileEntry;
+	}
 
 } // namespace BlockTypes
 
