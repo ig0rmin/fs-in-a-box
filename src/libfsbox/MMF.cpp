@@ -1,16 +1,9 @@
 #include "MMF.h"
+
+#include "FsUtils.h"
 #include "Logging.h"
 
 #include <boost/static_assert.hpp>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#ifndef _WIN32
-#define _stat64 stat64
-#endif
-
-BOOST_STATIC_ASSERT(sizeof(_stat64::st_size) == sizeof(stream_offset));
 
 using boost::iostreams::mapped_file_base;
 using boost::iostreams::mapped_file;
@@ -63,15 +56,13 @@ bool MemoryMappedFile::Open(const std::string& fileName, stream_offset offset)
 
 bool MemoryMappedFile::PeekFile(const std::string& fileName)
 {
-	struct _stat64 s = {0};
-	if (_stat64(fileName.c_str(), &s))
+	if (!FsUtils::FileExists(fileName))
 	{
 		return false;
 	}
-	_fileSize = s.st_size;
+	_fileSize = FsUtils::GetFileSize(fileName);
 	return true;
 }
-
 
 bool MemoryMappedFile::IsOpened() const
 {

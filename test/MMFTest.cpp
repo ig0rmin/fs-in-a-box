@@ -1,43 +1,9 @@
 #include <libfsbox/MMF.h>
-#include <libfsbox/Logging.h>
 
 #include "gtest/gtest.h"
-
-#include <vector>
-#include <algorithm>
-#include <fstream>
-#include <iterator>
-#include <cstdio>
+#include "TestUtils.h"
 
 using namespace std;
-
-static bool CreateSmallFile(const string& fileName, const string& fileContent)
-{
-	ofstream out(fileName, ios::binary);
-	if (!out.good())
-	{
-		return false;
-	}
-	copy(fileContent.begin(), fileContent.end(), ostream_iterator<char>(out));
-	return out.good();
-}
-
-static bool ReadSmallFile(const string& fileName, string& fileContent)
-{
-	ifstream in(fileName, ios::binary);
-	if (!in.good())
-	{
-		return false;
-	}
-	in.unsetf(ios::skipws); // sic!
-	copy(istream_iterator<char>(in), istream_iterator<char>(), back_inserter(fileContent));
-	return in.eof();
-}
-
-static bool DeleteFile(const string& fileName)
-{
-	return remove(fileName.c_str()) == 0;
-}
 
 TEST(MMF, MissingFile)
 {
@@ -51,8 +17,8 @@ TEST(MMF, ReadSmall)
 	const string fileName = "SMALL00.txt";
 	const string inFileBody = "FILE BODY";
 	string outFileBodyTest;
-	ASSERT_TRUE(CreateSmallFile(fileName, inFileBody));
-	ASSERT_TRUE(ReadSmallFile(fileName, outFileBodyTest));
+	ASSERT_TRUE(TestUtils::CreateSmallFile(fileName, inFileBody));
+	ASSERT_TRUE(TestUtils::ReadSmallFile(fileName, outFileBodyTest));
 	EXPECT_EQ(inFileBody, outFileBodyTest);
 
 	{
@@ -71,13 +37,13 @@ TEST(MMF, ReadSmall)
 		EXPECT_EQ(inFileBody, outFileBody);
 	}
 
-	DeleteFile(fileName);
+	TestUtils::DeleteFile(fileName);
 }
 
 TEST(MMF, ResizeSmall)
 {
 	const string fileName = "SMALL01.txt";
-	ASSERT_TRUE(CreateSmallFile(fileName, " "));
+	ASSERT_TRUE(TestUtils::CreateSmallFile(fileName, " "));
 
 	const string newFileBody = "Little brown fox";
 	{
@@ -100,17 +66,17 @@ TEST(MMF, ResizeSmall)
 	}
 
 	string testFileBody;
-	EXPECT_TRUE(ReadSmallFile(fileName, testFileBody));
+	EXPECT_TRUE(TestUtils::ReadSmallFile(fileName, testFileBody));
 
 	EXPECT_EQ(newFileBody, testFileBody);
 
-	DeleteFile(fileName);
+	TestUtils::DeleteFile(fileName);
 }
 
 TEST(MMF, RemapLarge)
 {
 	const string fileName = "LARGE00.txt";
-	ASSERT_TRUE(CreateSmallFile(fileName, " "));
+	ASSERT_TRUE(TestUtils::CreateSmallFile(fileName, " "));
 
 	const size_t viewSize = 1024;
 	const stream_offset fileSize = 10ll * 1024*1024*1024;
@@ -153,5 +119,5 @@ TEST(MMF, RemapLarge)
 		EXPECT_EQ(message, testMessage);
 	}
 
-	DeleteFile(fileName);
+	TestUtils::DeleteFile(fileName);
 }

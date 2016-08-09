@@ -1,9 +1,7 @@
 #ifndef __FSBOX_MMF_H__
 #define __FSBOX_MMF_H__
 
-#include <boost/iostreams/device/mapped_file.hpp>
-
-typedef boost::iostreams::stream_offset stream_offset;
+#include "Types.h"
 
 // This class workarounds bugs and limitations of boost::iostreams::mapped_file
 // realted to large files support
@@ -34,4 +32,5 @@ private:
 private:
 	bool PeekFile(const std::string& fileName);
 };
+
 #endif
