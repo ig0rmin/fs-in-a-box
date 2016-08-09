@@ -58,6 +58,7 @@ struct DirHeader : TypedBlock
 struct FileEntry : DoubleLinkedNode
 {
 	uint32_t entrySize;
+	uint32_t payloadSize;
 };
 
 struct FileHeader : TypedBlock
@@ -76,5 +77,7 @@ BOOST_STATIC_ASSERT(sizeof(FileEntry) == 32);
 BOOST_STATIC_ASSERT(sizeof(FileHeader) == 32);
 
 } // namespace BlockTypes
+
+typedef stream_offset BlockHandle;
 
 #endif
