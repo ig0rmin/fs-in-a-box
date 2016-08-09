@@ -11,7 +11,7 @@ bool Container::Open(const std::string& fileName)
 {
 	if (_mmf.IsOpened())
 	{
-		LOG_ERROR("Already opened");
+		LOG_ERROR("%s", "Already opened");
 		return false;
 	}
 	if (!FsUtils::FileExists(fileName) || !FsUtils::GetFileSize(fileName))

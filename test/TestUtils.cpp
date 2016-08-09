@@ -4,6 +4,13 @@
 #include <iterator>
 #include <cstdio>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
+#ifndef _WIN32
+#define _stat64 stat64
+#endif
+
 using namespace std;
 
 namespace TestUtils
