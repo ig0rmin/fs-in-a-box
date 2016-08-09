@@ -42,14 +42,9 @@ void Container::Close()
 	_mmf.Close();
 }
 
-void Container::Lock()
+std::recursive_mutex& Container::GetLock()
 {
-	_mutex.lock();
-}
-
-void Container::Unlock()
-{
-	_mutex.unlock();
+	return _mutex;
 }
 
 MemoryMappedFile& Container::GetFileMapping()

@@ -14,8 +14,7 @@ public:
 	bool IsOpened() const;
 	void Close();
 
-	void Lock();
-	void Unlock();
+	std::recursive_mutex& GetLock();
 
 	MemoryMappedFile& GetFileMapping();
 private:
