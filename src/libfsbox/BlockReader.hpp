@@ -3,56 +3,58 @@
 
 #include "Container.h"
 #include "BlockTypes.h"
-#include "Logging.h"
 
+namespace BlockTypes
+{
 
 template <typename T>
-BlockTypes::BlockType GetBlockType()
+BlockType GetBlockType()
 {
-	return BlockTypes::BlockType::Unknown;
+	return BlockType::Unknown;
 }
 
 template <>
-BlockTypes::BlockType GetBlockType<BlockTypes::ContainerHeader>()
+BlockType GetBlockType<ContainerHeader>()
 {
-	return BlockTypes::BlockType::ContainerHeader;
+	return BlockType::ContainerHeader;
 }
 
 template <>
-BlockTypes::BlockType GetBlockType<BlockTypes::FreeBlock>()
+BlockType GetBlockType<FreeBlock>()
 {
-	return BlockTypes::BlockType::FreeBlock;
+	return BlockType::FreeBlock;
 }
 
 template <>
-BlockTypes::BlockType GetBlockType<BlockTypes::DirHeader>()
+BlockType GetBlockType<DirHeader>()
 {
-	return BlockTypes::BlockType::DirHeader;
+	return BlockType::DirHeader;
 }
 
 template <>
-BlockTypes::BlockType GetBlockType<BlockTypes::DirEntry>()
+BlockType GetBlockType<DirEntry>()
 {
-	return BlockTypes::BlockType::DirEntry;
+	return BlockType::DirEntry;
 }
 
 template <>
-BlockTypes::BlockType GetBlockType<BlockTypes::FileHeader>()
+BlockType GetBlockType<FileHeader>()
 {
-	return BlockTypes::BlockType::FileHeader;
+	return BlockType::FileHeader;
 }
 
 template <>
-BlockTypes::BlockType GetBlockType<BlockTypes::FileEntry>()
+BlockType GetBlockType<FileEntry>()
 {
-	return BlockTypes::BlockType::FileEntry;
+	return BlockType::FileEntry;
 }
 
+} // namespace BlockTypes
 
 template <typename T>
 bool CheckBlockType(const T* block)
 {
-	return block->blockType == GetBlockType<T>();
+	return block->blockType == BlockTypes::GetBlockType<T>();
 }
 
 class BlockReader : public boost::noncopyable
