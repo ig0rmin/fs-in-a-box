@@ -6,7 +6,6 @@
 
 namespace BlockTypes
 {
-
 	template <typename T>
 	BlockType GetBlockType()
 	{
@@ -55,6 +54,13 @@ template <typename T>
 bool CheckBlockType(const T* block)
 {
 	return block->blockType == BlockTypes::GetBlockType<T>();
+}
+
+template <>
+bool CheckBlockType<BlockTypes::TypedBlock>(const BlockTypes::TypedBlock* block)
+{
+	return block->blockType >= BlockTypes::BlockType::FreeBlock &&
+		block->blockType <= BlockTypes::BlockType::FileHeader;
 }
 
 class BlockReader : public boost::noncopyable
