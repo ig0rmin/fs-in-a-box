@@ -19,6 +19,8 @@ enum class BlockType : std::uint32_t {Unknown,
 							FileEntry,
 							FileHeader,};
 
+#pragma pack(push, 1)
+
 struct TypedBlock
 {
 	BlockType blockType;
@@ -39,7 +41,7 @@ struct DoubleLinkedNode : TypedBlock
 
 struct FreeBlock : DoubleLinkedNode
 {
-	uint32_t size; 
+	uint32_t size;
 };
 
 struct DirEntry : DoubleLinkedNode
@@ -53,6 +55,7 @@ struct DirHeader : TypedBlock
 {
 	stream_offset parent;
 	stream_offset entryList;
+	uint32_t reserved;
 };
 
 struct FileEntry : DoubleLinkedNode
@@ -68,16 +71,16 @@ struct FileHeader : TypedBlock
 	stream_offset body;
 };
 
+#pragma pack(pop)
+
 BOOST_STATIC_ASSERT(sizeof(stream_offset) == 8);
+BOOST_STATIC_ASSERT(sizeof(FreeBlock) == 24);
 BOOST_STATIC_ASSERT(sizeof(ContainerHeader) == 24);
-BOOST_STATIC_ASSERT(sizeof(FreeBlock) == 32);
-BOOST_STATIC_ASSERT(sizeof(DirEntry) == 48);
 BOOST_STATIC_ASSERT(sizeof(DirHeader) == 24);
-BOOST_STATIC_ASSERT(sizeof(FileEntry) == 32);
-BOOST_STATIC_ASSERT(sizeof(FileHeader) == 32);
+BOOST_STATIC_ASSERT(sizeof(FileEntry) == 28);
+BOOST_STATIC_ASSERT(sizeof(FileHeader) == 28);
+BOOST_STATIC_ASSERT(sizeof(DirEntry) == 40);
 
 } // namespace BlockTypes
-
-typedef stream_offset BlockHandle;
 
 #endif
