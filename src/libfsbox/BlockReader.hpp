@@ -6,48 +6,29 @@
 
 namespace BlockTypes
 {
-	template <typename T>
-	BlockType GetBlockType()
-	{
-		return BlockType::Unknown;
-	}
+template <typename T>
+BlockType GetBlockType()
+{
+	return BlockType::Unknown;
+}
 
-	template <>
-	BlockType GetBlockType<ContainerHeader>()
-	{
-		return BlockType::ContainerHeader;
-	}
+template <>
+BlockType GetBlockType<ContainerHeader>();
 
-	template <>
-	BlockType GetBlockType<FreeBlock>()
-	{
-		return BlockType::FreeBlock;
-	}
+template <>
+BlockType GetBlockType<FreeBlock>();
 
-	template <>
-	BlockType GetBlockType<DirHeader>()
-	{
-		return BlockType::DirHeader;
-	}
+template <>
+BlockType GetBlockType<DirHeader>();
 
-	template <>
-	BlockType GetBlockType<DirEntry>()
-	{
-		return BlockType::DirEntry;
-	}
+template <>
+BlockType GetBlockType<DirEntry>();
 
-	template <>
-	BlockType GetBlockType<FileHeader>()
-	{
-		return BlockType::FileHeader;
-	}
+template <>
+BlockType GetBlockType<FileHeader>();
 
-	template <>
-	BlockType GetBlockType<FileEntry>()
-	{
-		return BlockType::FileEntry;
-	}
-
+template <>
+BlockType GetBlockType<FileEntry>();
 } // namespace BlockTypes
 
 template <typename T>
@@ -57,11 +38,7 @@ bool CheckBlockType(const T* block)
 }
 
 template <>
-bool CheckBlockType<BlockTypes::TypedBlock>(const BlockTypes::TypedBlock* block)
-{
-	return block->blockType >= BlockTypes::BlockType::FreeBlock &&
-		block->blockType <= BlockTypes::BlockType::FileHeader;
-}
+bool CheckBlockType<BlockTypes::TypedBlock>(const BlockTypes::TypedBlock* block);
 
 class BlockReader : public boost::noncopyable
 {
