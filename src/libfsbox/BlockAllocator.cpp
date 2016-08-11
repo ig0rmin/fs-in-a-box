@@ -6,7 +6,7 @@
 using namespace std;
 using namespace BlockTypes;
 
-//TODO: Needs refactoring
+//TODO: Needs review and refactoring
 
 class BlockAllocatorImpl : public boost::noncopyable
 {
@@ -191,6 +191,7 @@ BlockHandle BlockAllocatorImpl::Allocate(uint32_t sizeRequested)
 		LOG_ERROR("%s", "Minimum allocation size is %d, requested %d", BlockAllocator::GetMinAllocationSize(), sizeRequested);
 		return 0;
 	}
+	lock_guard<recursive_mutex> lock(_container.GetLock());
 	BlockHandle block = FindFreeBlock(sizeRequested);
 	if (!block)
 	{
@@ -361,6 +362,7 @@ BlockHandle BlockAllocatorImpl::TryMergeLeft(BlockHandle block)
 
 void BlockAllocatorImpl::Free(BlockHandle block)
 {
+	lock_guard<recursive_mutex> lock(_container.GetLock());
 	uint32_t blockSize = GetBlockSize(block);
 	if (!blockSize)
 	{
