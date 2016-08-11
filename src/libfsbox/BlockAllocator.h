@@ -23,6 +23,7 @@ public:
 	void Free(BlockHandle block);
 
 	static uint32_t GetMinAllocationSize();
+	static uint32_t GetMaxAllocationSize();
 private:
 	std::unique_ptr<BlockAllocatorImpl> _impl;	
 };

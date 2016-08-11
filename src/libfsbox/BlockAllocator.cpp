@@ -234,6 +234,11 @@ void BlockAllocatorImpl::UnpadBlock(BlockHandle block)
 		++padSize;
 		++outTheBlock;
 		++pOutTheBlock;
+		if (padSize > BlockAllocator::GetMinAllocationSize())
+		{
+			LOG_ERROR("%s", "Padding size can't be so big. Probably corrupted block");
+			return;
+		}
 	}
 	pFreeBlock->size += padSize;
 }

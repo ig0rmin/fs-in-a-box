@@ -25,14 +25,14 @@ public:
 	bool Remap(stream_offset offset);
 	bool Resize(stream_offset size);
 private:
+	bool PeekFile(const std::string& fileName);
+private:
 	boost::iostreams::mapped_file _mf;
 	std::string _fileName;
 	stream_offset _fileOffset;
 	stream_offset _fileSize;
 	size_t _alignment;
 	size_t _memViewSize;
-private:
-	bool PeekFile(const std::string& fileName);
 };
 
 }// namespace FsBox

@@ -21,12 +21,12 @@ public:
 
 	MemoryMappedFile& GetFileMapping();
 private:
-	std::recursive_mutex _mutex;
-	MemoryMappedFile _mmf;
-private:
 	bool Bootstrap(const std::string& fileName);
 	bool CheckContainerHeader();
 	static uint32_t GetMagic();
+private:
+	std::recursive_mutex _mutex;
+	MemoryMappedFile _mmf;
 };
 
 }//namespace FsBox
