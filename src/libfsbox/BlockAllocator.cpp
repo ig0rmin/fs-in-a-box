@@ -1,5 +1,6 @@
 #include "BlockAllocator.h"
 
+#include "BlockReader.hpp"
 #include "Logging.h"
 
 using namespace std;
@@ -7,18 +8,37 @@ using namespace BlockTypes;
 
 //TODO: Needs refactoring
 
-BlockAllocator::BlockAllocator(Container& container)
+class BlockAllocatorImpl : public boost::noncopyable
+{
+public:
+	BlockAllocatorImpl(Container& container);
+
+	BlockHandle Allocate(uint32_t size);
+	void Free(BlockHandle block);
+private:
+	BlockHandle NewFreeBlock(uint32_t size);
+	BlockHandle FindFreeBlock(uint32_t size);
+	void PadBlock(BlockHandle block, uint32_t size);
+	void UnpadBlock(BlockHandle block);
+	BlockHandle SplitBlock(BlockHandle block, uint32_t size);
+	BlockHandle FindInsertPoint(BlockHandle block);
+	void InsertFreeBlock(BlockHandle block);
+	uint32_t GetBlockSize(BlockHandle block);
+	bool Merge(BlockHandle base, BlockHandle supply);
+	void TryMergeRight(BlockHandle block);
+	BlockHandle TryMergeLeft(BlockHandle block);
+private:
+	Container& _container;
+	BlockReader _blockReader;
+};
+
+BlockAllocatorImpl::BlockAllocatorImpl(Container& container)
 :_container(container),
 _blockReader(container)
 {
 }
 
-uint32_t BlockAllocator::GetMinAllocationSize()
-{
-	return sizeof(FreeBlock);
-}
-
-BlockHandle BlockAllocator::NewFreeBlock(uint32_t size)
+BlockHandle BlockAllocatorImpl::NewFreeBlock(uint32_t size)
 {
 	MemoryMappedFile& mmf = _container.GetFileMapping();
 	stream_offset oldSize = mmf.GetFileSize();
@@ -28,7 +48,7 @@ BlockHandle BlockAllocator::NewFreeBlock(uint32_t size)
 	return oldSize;
 }
 
-BlockHandle BlockAllocator::FindFreeBlock(uint32_t size)
+BlockHandle BlockAllocatorImpl::FindFreeBlock(uint32_t size)
 {
 	ContainerHeader* containerHeader = _blockReader.Get<ContainerHeader>(0);
 	BlockHandle freeBlock = containerHeader->freeBlock;
@@ -49,7 +69,7 @@ BlockHandle BlockAllocator::FindFreeBlock(uint32_t size)
 	return freeBlock;
 }
 
-void BlockAllocator::PadBlock(BlockHandle block, uint32_t size)
+void BlockAllocatorImpl::PadBlock(BlockHandle block, uint32_t size)
 {
 	if (size < sizeof(FreeBlock))
 	{
@@ -73,7 +93,7 @@ void BlockAllocator::PadBlock(BlockHandle block, uint32_t size)
 	pFreeBlock->size = size;
 }
 
-BlockHandle BlockAllocator::SplitBlock(BlockHandle block, uint32_t size)
+BlockHandle BlockAllocatorImpl::SplitBlock(BlockHandle block, uint32_t size)
 {
 	if (size < sizeof(FreeBlock))
 	{
@@ -105,7 +125,7 @@ BlockHandle BlockAllocator::SplitBlock(BlockHandle block, uint32_t size)
 	return tail;
 }
 
-BlockHandle BlockAllocator::FindInsertPoint(BlockHandle block)
+BlockHandle BlockAllocatorImpl::FindInsertPoint(BlockHandle block)
 {
 	ContainerHeader* containerHeader = _blockReader.Get<ContainerHeader>(0);
 	BlockHandle freeBlock = containerHeader->freeBlock;
@@ -124,7 +144,7 @@ BlockHandle BlockAllocator::FindInsertPoint(BlockHandle block)
 	return insertAfter;
 }
 
-void BlockAllocator::InsertFreeBlock(BlockHandle block)
+void BlockAllocatorImpl::InsertFreeBlock(BlockHandle block)
 {
 	BlockHandle insertAfter = FindInsertPoint(block);
 	if (!insertAfter)
@@ -164,11 +184,11 @@ void BlockAllocator::InsertFreeBlock(BlockHandle block)
 	}
 }
 
-BlockHandle BlockAllocator::Allocate(uint32_t sizeRequested)
+BlockHandle BlockAllocatorImpl::Allocate(uint32_t sizeRequested)
 {
-	if (sizeRequested < GetMinAllocationSize())
+	if (sizeRequested < BlockAllocator::GetMinAllocationSize())
 	{
-		LOG_ERROR("%s", "Minimum allocation size is %d, requested %d", GetMinAllocationSize(), sizeRequested);
+		LOG_ERROR("%s", "Minimum allocation size is %d, requested %d", BlockAllocator::GetMinAllocationSize(), sizeRequested);
 		return 0;
 	}
 	BlockHandle block = FindFreeBlock(sizeRequested);
@@ -178,7 +198,7 @@ BlockHandle BlockAllocator::Allocate(uint32_t sizeRequested)
 	}
 	FreeBlock* pFoundBlock = _blockReader.Get<FreeBlock>(block);
 	uint32_t sizeRemaining = pFoundBlock->size - sizeRequested;
-	if (sizeRemaining < GetMinAllocationSize())
+	if (sizeRemaining < BlockAllocator::GetMinAllocationSize())
 	{
 		PadBlock(block, sizeRequested);
 	}
@@ -190,7 +210,7 @@ BlockHandle BlockAllocator::Allocate(uint32_t sizeRequested)
 	return block;
 }
 
-void BlockAllocator::UnpadBlock(BlockHandle block)
+void BlockAllocatorImpl::UnpadBlock(BlockHandle block)
 {
 	FreeBlock* pFreeBlock = _blockReader.Get<FreeBlock>(block);
 	if (!pFreeBlock)
@@ -205,8 +225,8 @@ void BlockAllocator::UnpadBlock(BlockHandle block)
 	BlockHandle blockLimit = mmf.GetFileSize();
 	uint32_t padSize = 0;
 	while (outTheBlock < blockLimit && 
-			pOutTheBlock < memLimit &&
-			*pOutTheBlock == 0)
+		pOutTheBlock < memLimit &&
+		*pOutTheBlock == 0)
 	{
 		++padSize;
 		++outTheBlock;
@@ -215,7 +235,7 @@ void BlockAllocator::UnpadBlock(BlockHandle block)
 	pFreeBlock->size += padSize;
 }
 
-uint32_t BlockAllocator::GetBlockSize(BlockHandle block)
+uint32_t BlockAllocatorImpl::GetBlockSize(BlockHandle block)
 {
 	TypedBlock* pTypedBlock = _blockReader.Get<TypedBlock>(block);
 	if (!pTypedBlock)
@@ -243,7 +263,7 @@ uint32_t BlockAllocator::GetBlockSize(BlockHandle block)
 	}
 }
 
-bool BlockAllocator::Merge(BlockHandle base, BlockHandle supply)
+bool BlockAllocatorImpl::Merge(BlockHandle base, BlockHandle supply)
 {
 	FreeBlock* pSupply = _blockReader.Get<FreeBlock>(supply);
 	if (!pSupply)
@@ -292,7 +312,7 @@ bool BlockAllocator::Merge(BlockHandle base, BlockHandle supply)
 	return true;
 }
 
-void BlockAllocator::TryMergeRight(BlockHandle block)
+void BlockAllocatorImpl::TryMergeRight(BlockHandle block)
 {
 	FreeBlock* pFreeBlock = _blockReader.Get<FreeBlock>(block);
 	if (!pFreeBlock)
@@ -319,7 +339,7 @@ void BlockAllocator::TryMergeRight(BlockHandle block)
 	}
 }
 
-BlockHandle BlockAllocator::TryMergeLeft(BlockHandle block)
+BlockHandle BlockAllocatorImpl::TryMergeLeft(BlockHandle block)
 {
 	BlockHandle leftmostFreeBlock = FindInsertPoint(block);
 	if (!leftmostFreeBlock)
@@ -339,7 +359,7 @@ BlockHandle BlockAllocator::TryMergeLeft(BlockHandle block)
 	return block;
 }
 
-void BlockAllocator::Free(BlockHandle block)
+void BlockAllocatorImpl::Free(BlockHandle block)
 {
 	uint32_t blockSize = GetBlockSize(block);
 	if (!blockSize)
@@ -357,4 +377,30 @@ void BlockAllocator::Free(BlockHandle block)
 	TryMergeRight(block);
 	block = TryMergeLeft(block);
 	InsertFreeBlock(block);
+}
+
+// BlockAllocator
+
+BlockAllocator::BlockAllocator(Container& container)
+:_impl(new(nothrow) BlockAllocatorImpl(container))
+{
+}
+
+BlockAllocator::~BlockAllocator()
+{
+}
+
+uint32_t BlockAllocator::GetMinAllocationSize()
+{
+	return sizeof(FreeBlock);
+}
+
+BlockHandle BlockAllocator::Allocate(uint32_t size)
+{
+	return _impl->Allocate(size);
+}
+
+void BlockAllocator::Free(BlockHandle block)
+{
+	return _impl->Free(block);
 }

@@ -1,5 +1,6 @@
 #include <libfsbox/Container.h>
 #include <libfsbox/BlockAllocator.h>
+#include <libfsbox/BlockTypes.h>
 
 #include "gtest/gtest.h"
 #include "TestUtils.h"
