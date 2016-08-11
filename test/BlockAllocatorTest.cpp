@@ -6,6 +6,7 @@
 #include "TestUtils.h"
 
 using namespace std;
+using namespace FsBox;
 
 class BlockAllocatorTestsuite : public testing::Test
 {

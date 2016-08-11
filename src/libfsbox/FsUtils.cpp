@@ -9,10 +9,12 @@
 #define _stat64 stat64
 #endif
 
-BOOST_STATIC_ASSERT(sizeof(_stat64::st_size) == sizeof(stream_offset));
+BOOST_STATIC_ASSERT(sizeof(_stat64::st_size) == sizeof(FsBox::stream_offset));
 
 using namespace std;
 
+namespace FsBox
+{
 namespace FsUtils
 {
 
@@ -42,4 +44,5 @@ bool WriteFile(const std::string& fileName, const void* buff, size_t buffSize)
 	return out.good();
 }
 
-} // namespace FsUtils
+}//namespace FsUtils
+}//namespace FsBox

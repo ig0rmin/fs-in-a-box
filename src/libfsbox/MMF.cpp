@@ -8,6 +8,9 @@
 using boost::iostreams::mapped_file_base;
 using boost::iostreams::mapped_file;
 
+namespace FsBox
+{
+
 MemoryMappedFile::MemoryMappedFile(size_t memViewSize)
 :_fileOffset(0),
 _fileSize(0),
@@ -130,3 +133,5 @@ bool MemoryMappedFile::Resize(stream_offset size)
 	_fileSize = size;
 	return true;
 }
+
+}//namespace FsBox

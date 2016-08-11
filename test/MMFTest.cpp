@@ -4,6 +4,7 @@
 #include "TestUtils.h"
 
 using namespace std;
+using namespace FsBox;
 
 TEST(MMF, MissingFile)
 {

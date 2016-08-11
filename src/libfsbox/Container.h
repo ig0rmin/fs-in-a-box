@@ -7,6 +7,9 @@
 
 #include <mutex>
 
+namespace FsBox
+{
+
 class Container : public boost::noncopyable
 {
 public:
@@ -26,4 +29,5 @@ private:
 	static uint32_t GetMagic();
 };
 
+}//namespace FsBox
 #endif

@@ -1,5 +1,7 @@
 #include "BlockReader.hpp"
 
+namespace FsBox
+{
 namespace BlockTypes
 {
 	template <>
@@ -37,7 +39,7 @@ namespace BlockTypes
 	{
 		return BlockType::FileEntry;
 	}
-}
+}//namespace BlockTypes
 
 template <>
 bool CheckBlockType<BlockTypes::TypedBlock>(const BlockTypes::TypedBlock* block)
@@ -45,3 +47,5 @@ bool CheckBlockType<BlockTypes::TypedBlock>(const BlockTypes::TypedBlock* block)
 	return block->blockType >= BlockTypes::BlockType::FreeBlock &&
 		block->blockType <= BlockTypes::BlockType::FileHeader;
 }
+
+}//namespace FsBox

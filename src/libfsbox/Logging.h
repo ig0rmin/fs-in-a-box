@@ -1,6 +1,8 @@
 #ifndef __FSBOX_LOGGING_H__
 #define __FSBOX_LOGGING_H__
 
+//TODO: We need better logging library
+
 #ifdef ENABLE_LOGGING
 
 #ifdef _WIN32

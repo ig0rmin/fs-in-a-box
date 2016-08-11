@@ -4,31 +4,33 @@
 #include "Container.h"
 #include "BlockTypes.h"
 
+namespace FsBox
+{
 namespace BlockTypes
 {
-template <typename T>
-BlockType GetBlockType()
-{
-	return BlockType::Unknown;
-}
+	template <typename T>
+	BlockType GetBlockType()
+	{
+		return BlockType::Unknown;
+	}
 
-template <>
-BlockType GetBlockType<ContainerHeader>();
+	template <>
+	BlockType GetBlockType<ContainerHeader>();
 
-template <>
-BlockType GetBlockType<FreeBlock>();
+	template <>
+	BlockType GetBlockType<FreeBlock>();
 
-template <>
-BlockType GetBlockType<DirHeader>();
+	template <>
+	BlockType GetBlockType<DirHeader>();
 
-template <>
-BlockType GetBlockType<DirEntry>();
+	template <>
+	BlockType GetBlockType<DirEntry>();
 
-template <>
-BlockType GetBlockType<FileHeader>();
+	template <>
+	BlockType GetBlockType<FileHeader>();
 
-template <>
-BlockType GetBlockType<FileEntry>();
+	template <>
+	BlockType GetBlockType<FileEntry>();
 } // namespace BlockTypes
 
 template <typename T>
@@ -96,4 +98,5 @@ private:
 	Container& _container;
 };
 
+}//namespace FsBox
 #endif

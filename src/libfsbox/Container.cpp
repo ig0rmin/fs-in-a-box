@@ -5,8 +5,11 @@
 #include "Logging.h"
 
 using namespace std;
-using namespace BlockTypes;
+using namespace FsBox::BlockTypes;
 
+namespace FsBox
+{
+	
 bool Container::Open(const std::string& fileName)
 {
 	if (_mmf.IsOpened())
@@ -107,3 +110,5 @@ bool Container::CheckContainerHeader()
 	}
 	return true;
 }
+
+}//namespace FsBox

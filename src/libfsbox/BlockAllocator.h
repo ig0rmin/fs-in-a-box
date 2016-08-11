@@ -7,6 +7,9 @@
 
 #include <memory>
 
+namespace FsBox
+{
+
 class BlockAllocatorImpl;
 class Container;
 
@@ -24,4 +27,5 @@ private:
 	std::unique_ptr<BlockAllocatorImpl> _impl;	
 };
 
+}
 #endif

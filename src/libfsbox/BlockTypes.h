@@ -7,6 +7,8 @@
 
 #include <boost/static_assert.hpp>
 
+namespace FsBox
+{
 namespace BlockTypes
 {
 
@@ -81,6 +83,6 @@ BOOST_STATIC_ASSERT(sizeof(FileEntry) == 28);
 BOOST_STATIC_ASSERT(sizeof(FileHeader) == 28);
 BOOST_STATIC_ASSERT(sizeof(DirEntry) == 40);
 
-} // namespace BlockTypes
-
+}// namespace BlockTypes
+}// namespace FsBox
 #endif

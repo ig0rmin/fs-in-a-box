@@ -3,6 +3,8 @@
 
 #include "Types.h"
 
+namespace FsBox
+{
 // This class workarounds bugs and limitations of boost::iostreams::mapped_file
 // realted to large files support
 class MemoryMappedFile
@@ -33,4 +35,5 @@ private:
 	bool PeekFile(const std::string& fileName);
 };
 
+}// namespace FsBox
 #endif

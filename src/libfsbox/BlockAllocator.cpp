@@ -4,10 +4,12 @@
 #include "Logging.h"
 
 using namespace std;
-using namespace BlockTypes;
+using namespace FsBox::BlockTypes;
 
-//TODO: Needs review and refactoring
+namespace FsBox
+{
 
+//TODO: Needs review
 class BlockAllocatorImpl : public boost::noncopyable
 {
 public:
@@ -406,3 +408,5 @@ void BlockAllocator::Free(BlockHandle block)
 {
 	return _impl->Free(block);
 }
+
+}//namespace FsBox

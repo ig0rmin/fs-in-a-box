@@ -4,7 +4,8 @@
 #include "TestUtils.h"
 
 using namespace std;
-using namespace BlockTypes;
+using namespace FsBox;
+using namespace FsBox::BlockTypes;
 
 TEST(BlockReader, ContainerHeader)
 {
