@@ -46,6 +46,12 @@ TEST_F(BlockAllocatorTestsuite, AllocAndFree)
 	allocator.Free(allocated);
 }
 
+TEST_F(BlockAllocatorTestsuite, AllocTooSmall)
+{
+	BlockAllocator allocator(container);
+	EXPECT_FALSE(allocator.Allocate(BlockAllocator::GetMinAllocationSize() - 1));
+}
+
 TEST_F(BlockAllocatorTestsuite, ReuseFreeBlock)
 {
 	BlockAllocator allocator(container);
@@ -103,4 +109,21 @@ TEST_F(BlockAllocatorTestsuite, MergeLeft)
 	BlockHandle allocBig = allocator.Allocate(BlockAllocator::GetMinAllocationSize()*2);
 	EXPECT_EQ(containerSize, container.GetFileMapping().GetFileSize());
 	EXPECT_EQ(alloc01, allocBig);
+}
+
+TEST_F(BlockAllocatorTestsuite, PadUnpad)
+{
+	BlockAllocator allocator(container);
+	BlockHandle alloc01 = allocator.Allocate(BlockAllocator::GetMinAllocationSize()*2);
+	EXPECT_TRUE(alloc01);
+	allocator.Free(alloc01);
+	// asking to allocate block just a bit smaller that we have in a reserve
+	// we should reuse the same block, padding trailing bytes with 0
+	BlockHandle alloc02 = allocator.Allocate(BlockAllocator::GetMinAllocationSize()*2 - 4);
+	EXPECT_EQ(alloc01, alloc02);
+	// free the allocated block. allocator should check for trailing padding
+	// and unpad block, returning to the reserve block with the original size
+	allocator.Free(alloc02);
+	BlockHandle alloc03 = allocator.Allocate(BlockAllocator::GetMinAllocationSize()*2);
+	EXPECT_EQ(alloc01, alloc03);
 }
