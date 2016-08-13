@@ -10,7 +10,7 @@ namespace FsBox
 class MemoryMappedFile
 {
 public:
-	MemoryMappedFile(size_t memViewSize = 10*1024*1024);
+	MemoryMappedFile(size_t memViewSize = 200*64*1024); //Here we have tradoff between memory consumption and speed
 	virtual ~MemoryMappedFile();
 
 	bool Open(const std::string& fileName, stream_offset offset = 0);
@@ -19,6 +19,7 @@ public:
 
 	char* GetData();
 	size_t GetDataSize() const;
+	size_t GetMaxViewSize() const;
 
 	stream_offset GetFileSize() const;
 	stream_offset GetDataOffset() const;

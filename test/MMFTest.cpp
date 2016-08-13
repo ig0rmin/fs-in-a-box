@@ -122,3 +122,37 @@ TEST(MMF, RemapLarge)
 
 	TestUtils::DeleteFile(fileName);
 }
+
+TEST(MMF, RemapNearBorder)
+{
+	const string fileName = "LARGE01.txt";
+	ASSERT_TRUE(TestUtils::CreateSmallFile(fileName, " "));
+
+	{
+		MemoryMappedFile mmf;//(64*1024);
+
+		mmf.Open(fileName);
+
+		const stream_offset fileSize = mmf.GetMaxViewSize();
+		const size_t thunkSize = 24;
+	
+		EXPECT_TRUE(mmf.Resize(fileSize));
+		EXPECT_TRUE(mmf.GetData());
+		EXPECT_EQ(fileSize, mmf.GetFileSize());
+
+		EXPECT_FALSE(mmf.Remap(fileSize));
+
+		EXPECT_TRUE(mmf.Resize(fileSize + thunkSize));
+		EXPECT_TRUE(mmf.Remap(fileSize));
+		EXPECT_TRUE(mmf.GetData());
+		EXPECT_EQ(fileSize + thunkSize, mmf.GetFileSize());
+
+		//Check that data(fileSize), data(fileSize+thunkSize) inside mem view
+		EXPECT_GE(fileSize, mmf.GetDataOffset());
+		EXPECT_LT(fileSize, mmf.GetDataOffset() + mmf.GetDataSize());
+
+		EXPECT_LE(fileSize + thunkSize, mmf.GetDataOffset() + mmf.GetDataSize());
+	}
+
+	TestUtils::DeleteFile(fileName);
+}

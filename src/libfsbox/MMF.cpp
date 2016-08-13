@@ -44,6 +44,10 @@ bool MemoryMappedFile::Open(const std::string& fileName, stream_offset offset)
 	}
 	size_t viewSize = (_fileSize > _memViewSize) ? _memViewSize : static_cast<size_t>(_fileSize);
 	_fileOffset = (offset / _alignment) * _alignment;
+	if (_fileOffset + viewSize > _fileSize)
+	{
+		viewSize = _fileSize - _fileOffset;
+	}
 	try
 	{
 		LOG_DEBUG("About to open: %s, %d", fileName.c_str(), viewSize);
@@ -94,6 +98,11 @@ char * MemoryMappedFile::GetData()
 size_t MemoryMappedFile::GetDataSize() const
 {
 	return std::min(_memViewSize, _mf.size());
+}
+
+size_t MemoryMappedFile::GetMaxViewSize() const
+{
+	return _memViewSize;
 }
 
 stream_offset MemoryMappedFile::GetFileSize() const
