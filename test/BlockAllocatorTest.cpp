@@ -29,11 +29,6 @@ protected:
 		TestUtils::DeleteFile(fileName);
 	}
 
-	void FillBlock(BlockReader& blockReader, BlockHandle blockHandle, char ch)
-	{
-
-	}
-
 	Container container;
 	string fileName;
 
