@@ -24,3 +24,5 @@ TEST(BlockReader, ContainerHeader)
 
 	TestUtils::DeleteFile(fileName);
 }
+
+// Most BlockReader tests are part of BlockAllocatorTestsuite
