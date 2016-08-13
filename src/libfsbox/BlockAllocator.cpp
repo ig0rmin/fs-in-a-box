@@ -190,7 +190,12 @@ BlockHandle BlockAllocatorImpl::Allocate(uint32_t sizeRequested)
 {
 	if (sizeRequested < BlockAllocator::GetMinAllocationSize())
 	{
-		LOG_ERROR("%s", "Minimum allocation size is %d, requested %d", BlockAllocator::GetMinAllocationSize(), sizeRequested);
+		LOG_ERROR("Minimum allocation size is %d, requested %d", BlockAllocator::GetMinAllocationSize(), sizeRequested);
+		return 0;
+	}
+	if (sizeRequested > BlockAllocator::GetMaxAllocationSize())
+	{
+		LOG_ERROR("Maximum allocation size is %d, requested %d", BlockAllocator::GetMaxAllocationSize(), sizeRequested);
 		return 0;
 	}
 	lock_guard<recursive_mutex> lock(_container.GetLock());
@@ -402,6 +407,11 @@ BlockAllocator::~BlockAllocator()
 uint32_t BlockAllocator::GetMinAllocationSize()
 {
 	return sizeof(FreeBlock);
+}
+
+uint32_t BlockAllocator::GetMaxAllocationSize()
+{
+	return GetMaxBlockSize();
 }
 
 BlockHandle BlockAllocator::Allocate(uint32_t size)
