@@ -85,7 +85,7 @@ public:
 		{
 			return nullptr;
 		}
-		ptr->blockType = GetBlockType<T>();
+		ptr->blockType = BlockTypes::GetBlockType<T>();
 		return ptr;
 	}
 private:
@@ -122,8 +122,7 @@ private:
 		return CheckDataInMemoryView(ptr, sizeof(T));
 	}
 
-	template <>
-	bool CheckBlockPayloadBorders<BlockTypes::FreeBlock>(const BlockTypes::FreeBlock* ptr)
+	bool CheckBlockPayloadBorders(const BlockTypes::FreeBlock* ptr)
 	{
 		uint32_t fullSize = ptr->size;
 		if (fullSize > BlockTypes::GetMaxBlockSize())
@@ -133,8 +132,7 @@ private:
 		return CheckDataInMemoryView(ptr, fullSize);
 	}
 
-	template <>
-	bool CheckBlockPayloadBorders<BlockTypes::FileEntry>(const BlockTypes::FileEntry* ptr)
+	bool CheckBlockPayloadBorders(const BlockTypes::FileEntry* ptr)
 	{
 		uint32_t fullSize = ptr->entrySize;
 		if (fullSize > BlockTypes::GetMaxBlockSize())
