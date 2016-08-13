@@ -188,7 +188,7 @@ TEST_F(BlockAllocatorTestsuite, CheckDataConsistency)
 		pFirstBlockFileEntry->payloadSize = payloadSize;
 	}
 
-	// Allocate a lot of blocks, forsing memory view to remap
+	// Allocate a lot of blocks, forcing memory view to remap
 	vector<BlockHandle> allocatedBlocks;
 	stream_offset allocatedSize = 0;
 	do
