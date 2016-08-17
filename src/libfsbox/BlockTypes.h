@@ -66,10 +66,14 @@ struct FileEntry : DoubleLinkedNode
 	uint32_t payloadSize;
 };
 
+// TODO: No parent
+// TODO: No bodySize
+// TODO: Add FileType (File, MetaInfo)
+// TODO: May be some attributes
 struct FileHeader : TypedBlock
 {
-	stream_offset parent;
-	stream_offset bodySize;
+	stream_offset fill00;
+	stream_offset fill01;
 	stream_offset body;
 };
 
