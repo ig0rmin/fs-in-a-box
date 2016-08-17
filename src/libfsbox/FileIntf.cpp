@@ -1,25 +1,64 @@
 #include "FileIntf.h"
 
+#include "BlockAllocator.h"
+#include "BlockReader.hpp"
 #include "Logging.h"
 
+#include <functional>
+
 using namespace FsBox::BlockTypes;
+
+//TODO: This code needs to be reviewed and refactored
 
 namespace FsBox
 {
 
-FStreamIntf::FStreamIntf(Container & container):
+struct FilePos
+{
+	BlockHandle fileEntry;
+	stream_offset offset;;
+	size_t memOffset;
+};
+
+class FileIntfImpl : public boost::noncopyable
+{
+public:
+	FileIntfImpl(Container & container);
+
+	BlockHandle Create();
+	stream_offset GetSize(BlockHandle fileHeader);
+	bool IsEmpty(BlockHandle fileHeader);
+	size_t Read(BlockHandle fileHeader, char* buff, size_t buffSize, stream_offset offset);
+	bool Write(BlockHandle fileHeader, const char* buff, size_t buffSize, stream_offset offset);
+	bool Append(BlockHandle fileHeader, const char* buff, size_t buffSize);
+	bool Truncate(BlockHandle fileHeader, stream_offset newSize);
+	void Delete(BlockHandle fileHeader);
+private:
+	using EnumFileEntriesFn = bool(BlockHandle fileEntry, BlockTypes::FileEntry* pFileEntry);
+	void EnumerateFileEnties(BlockHandle fileEntry, std::function<EnumFileEntriesFn> callback);
+
+	BlockHandle NextFileEntry(BlockHandle fileEntry);
+	BlockHandle CreateFileEntry(uint32_t payloadSize);
+	size_t WriteToFileEntry(BlockHandle fileEntry, const char* buff, size_t buffSize, size_t offset);
+	bool Write(FilePos pos, const char* buff, size_t buffSize);
+	bool AppendImpl(FilePos pos, const char* buff, size_t buffSize);
+	bool AppendImpl(BlockHandle fileHeader, const char* buff, size_t buffSize);
+	bool Seek(BlockHandle fileHeader, FilePos& pos, stream_offset offset);
+	void SeekEnd(BlockHandle fileHeader, FilePos& pos);
+	size_t Read(FilePos pos, char* buff, size_t buffSize);
+	void DeleteFileEntryList(BlockHandle fileEntry);
+private:
+	BlockAllocator _blockAllocator;
+	BlockReader	_blockReader;
+};
+
+FileIntfImpl::FileIntfImpl(Container & container):
 _blockAllocator(container),
 _blockReader(container)
 {
 }
 
-uint32_t FStreamIntf::GetMaxPayloadSize()
-{
-	return BlockAllocator::GetMaxAllocationSize() - sizeof(FileEntry);
-}
-
-
-void FStreamIntf::EnumerateFileEnties(BlockHandle fileEntry, std::function<EnumFileEntriesFn> callback)
+void FileIntfImpl::EnumerateFileEnties(BlockHandle fileEntry, std::function<EnumFileEntriesFn> callback)
 {
 	while (fileEntry)
 	{
@@ -38,7 +77,7 @@ void FStreamIntf::EnumerateFileEnties(BlockHandle fileEntry, std::function<EnumF
 	}
 }
 
-size_t FStreamIntf::WriteToFileEntry(BlockHandle fileEntry, const char* buff, size_t buffSize, size_t offset)
+size_t FileIntfImpl::WriteToFileEntry(BlockHandle fileEntry, const char* buff, size_t buffSize, size_t offset)
 {
 	FileEntry* pFileEntry = _blockReader.Get<FileEntry>(fileEntry);
 	if (!pFileEntry)
@@ -62,7 +101,7 @@ size_t FStreamIntf::WriteToFileEntry(BlockHandle fileEntry, const char* buff, si
 	return toWrite;
 }
 
-BlockHandle FStreamIntf::NextFileEntry(BlockHandle fileEntry)
+BlockHandle FileIntfImpl::NextFileEntry(BlockHandle fileEntry)
 {
 	FileEntry* pFileEntry = _blockReader.Get<FileEntry>(fileEntry);
 	if (!pFileEntry)
@@ -73,7 +112,7 @@ BlockHandle FStreamIntf::NextFileEntry(BlockHandle fileEntry)
 	return pFileEntry->next;
 }
 
-BlockHandle FStreamIntf::CreateFileEntry(uint32_t payloadSize)
+BlockHandle FileIntfImpl::CreateFileEntry(uint32_t payloadSize)
 {
 	const uint32_t entrySize = sizeof(FileEntry) + payloadSize;
 	BlockHandle block = _blockAllocator.Allocate(entrySize);
@@ -95,7 +134,7 @@ BlockHandle FStreamIntf::CreateFileEntry(uint32_t payloadSize)
 	return block;
 }
 
-bool FStreamIntf::AppendImpl(BlockHandle fileHeader, const char* buff, size_t buffSize)
+bool FileIntfImpl::AppendImpl(BlockHandle fileHeader, const char* buff, size_t buffSize)
 {
 	FileHeader* pFileHeader = _blockReader.Get<FileHeader>(fileHeader);
 	if (!pFileHeader)
@@ -108,7 +147,7 @@ bool FStreamIntf::AppendImpl(BlockHandle fileHeader, const char* buff, size_t bu
 		LOG_ERROR("%s", "File is not empty");
 		return false;
 	}
-	uint32_t fileEntrySize = std::min(buffSize, GetMaxPayloadSize());
+	uint32_t fileEntrySize = std::min(buffSize, FileIntf::GetMaxPayloadSize());
 	BlockHandle newFileEntry = CreateFileEntry(fileEntrySize);
 	size_t written = WriteToFileEntry(newFileEntry, buff, buffSize, 0);
 	// this block is the new body in file header
@@ -123,14 +162,14 @@ bool FStreamIntf::AppendImpl(BlockHandle fileHeader, const char* buff, size_t bu
 	{
 		return true;
 	}
-	FStreamPos pos;
+	FilePos pos;
 	pos.fileEntry = newFileEntry;
 	pos.memOffset = 0;
 	pos.offset = 0;
 	return AppendImpl(pos, buff + written, buffSize - written);
 }
 
-bool FStreamIntf::AppendImpl(FStreamPos pos, const char* buff, size_t buffSize)
+bool FileIntfImpl::AppendImpl(FilePos pos, const char* buff, size_t buffSize)
 {
 	BlockHandle fileEntry = pos.fileEntry;
 	FileEntry* pFileEntry = _blockReader.Get<FileEntry>(fileEntry);
@@ -146,7 +185,7 @@ bool FStreamIntf::AppendImpl(FStreamPos pos, const char* buff, size_t buffSize)
 	}
 	while (buffSize)
 	{
-		BlockHandle newFileEntry = CreateFileEntry(std::min(buffSize, GetMaxPayloadSize()));
+		BlockHandle newFileEntry = CreateFileEntry(std::min(buffSize, FileIntf::GetMaxPayloadSize()));
 		size_t written = WriteToFileEntry(newFileEntry, buff, buffSize, 0);
 		buff += written;
 		buffSize -= written;
@@ -161,7 +200,7 @@ bool FStreamIntf::AppendImpl(FStreamPos pos, const char* buff, size_t buffSize)
 	return !buffSize;
 }
 
-bool FStreamIntf::Write(FStreamPos pos, const char* buff, size_t buffSize)
+bool FileIntfImpl::Write(FilePos pos, const char* buff, size_t buffSize)
 {
 	auto writeCallback = [&buff, &buffSize,this](BlockHandle fileEntry, BlockTypes::FileEntry* pFileEntry)
 	{
@@ -194,7 +233,7 @@ bool FStreamIntf::Write(FStreamPos pos, const char* buff, size_t buffSize)
 	return !buffSize;
 }
 
-void FStreamIntf::SeekEnd(BlockHandle fileHeader, FStreamPos& pos)
+void FileIntfImpl::SeekEnd(BlockHandle fileHeader, FilePos& pos)
 {
 	FileHeader* pFileHeader = _blockReader.Get<FileHeader>(fileHeader);
 	if (!pFileHeader)
@@ -214,7 +253,7 @@ void FStreamIntf::SeekEnd(BlockHandle fileHeader, FStreamPos& pos)
 	EnumerateFileEnties(pFileHeader->body, seekEndCallback);
 }
 
-bool FStreamIntf::Seek(BlockHandle fileHeader, FStreamPos& pos, stream_offset requestedOffset)
+bool FileIntfImpl::Seek(BlockHandle fileHeader, FilePos& pos, stream_offset requestedOffset)
 {
 	FileHeader* pFileHeader = _blockReader.Get<FileHeader>(fileHeader);
 	if (!pFileHeader)
@@ -249,7 +288,7 @@ bool FStreamIntf::Seek(BlockHandle fileHeader, FStreamPos& pos, stream_offset re
 	return true;
 }
 
-stream_offset FStreamIntf::GetSize(BlockHandle fileHeader)
+stream_offset FileIntfImpl::GetSize(BlockHandle fileHeader)
 {
 	FileHeader* pFileHeader = _blockReader.Get<FileHeader>(fileHeader);
 	if (!pFileHeader)
@@ -267,7 +306,7 @@ stream_offset FStreamIntf::GetSize(BlockHandle fileHeader)
 	return fileSize;
 }
 
-bool FStreamIntf::IsEmpty(BlockHandle fileHeader)
+bool FileIntfImpl::IsEmpty(BlockHandle fileHeader)
 {
 	FileHeader* pFileHeader = _blockReader.Get<FileHeader>(fileHeader);
 	if (!pFileHeader)
@@ -278,7 +317,7 @@ bool FStreamIntf::IsEmpty(BlockHandle fileHeader)
 	return pFileHeader->body == 0;
 }
 
-bool FStreamIntf::Write(BlockHandle fileHeader, const char* buff, size_t buffSize, stream_offset offset)
+bool FileIntfImpl::Write(BlockHandle fileHeader, const char* buff, size_t buffSize, stream_offset offset)
 {
 	stream_offset fileSize = GetSize(fileHeader);
 	if (!fileSize && offset)
@@ -295,7 +334,7 @@ bool FStreamIntf::Write(BlockHandle fileHeader, const char* buff, size_t buffSiz
 		LOG_ERROR("%s", "Offset is outside of file");
 		return false;
 	}
-	FStreamPos pos = {0};
+	FilePos pos = {0};
 	if (!Seek(fileHeader, pos, offset))
 	{
 		return false;
@@ -303,7 +342,7 @@ bool FStreamIntf::Write(BlockHandle fileHeader, const char* buff, size_t buffSiz
 	return Write(pos, buff, buffSize);
 }
 
-BlockHandle FStreamIntf::Create()
+BlockHandle FileIntfImpl::Create()
 {
 	BlockHandle fileHeader = _blockAllocator.Allocate(sizeof(FileHeader));
 	if (!fileHeader)
@@ -320,18 +359,18 @@ BlockHandle FStreamIntf::Create()
 	return fileHeader;
 }
 
-bool FStreamIntf::Append(BlockHandle fileHeader, const char* buff, size_t buffSize)
+bool FileIntfImpl::Append(BlockHandle fileHeader, const char* buff, size_t buffSize)
 {
 	if (IsEmpty(fileHeader))
 	{
 		return AppendImpl(fileHeader, buff, buffSize);
 	}
-	FStreamPos pos = {0};
+	FilePos pos = {0};
 	SeekEnd(fileHeader, pos);
 	return AppendImpl(pos, buff, buffSize);
 }
 
-size_t FStreamIntf::Read(FStreamPos pos, char* buff, size_t buffSize)
+size_t FileIntfImpl::Read(FilePos pos, char* buff, size_t buffSize)
 {
 	size_t memOffset = pos.memOffset;
 	size_t read = 0;
@@ -356,9 +395,9 @@ size_t FStreamIntf::Read(FStreamPos pos, char* buff, size_t buffSize)
 	return read;
 }
 
-size_t FStreamIntf::Read(BlockHandle fileHeader, char* buff, size_t buffSize, stream_offset offset)
+size_t FileIntfImpl::Read(BlockHandle fileHeader, char* buff, size_t buffSize, stream_offset offset)
 {
-	FStreamPos pos = {0};
+	FilePos pos = {0};
 	if (!Seek(fileHeader, pos, offset))
 	{
 		LOG_ERROR("%s", "Seek failed");
@@ -367,7 +406,7 @@ size_t FStreamIntf::Read(BlockHandle fileHeader, char* buff, size_t buffSize, st
 	return Read(pos, buff, buffSize);
 }
 
-void FStreamIntf::DeleteFileEntryList(BlockHandle fileEntry)
+void FileIntfImpl::DeleteFileEntryList(BlockHandle fileEntry)
 {
 	BlockAllocator& blockAllocator = _blockAllocator;
 	auto deleteCallback = [&blockAllocator](BlockHandle fileEntry, FileEntry* pFileEntry)
@@ -378,9 +417,9 @@ void FStreamIntf::DeleteFileEntryList(BlockHandle fileEntry)
 	EnumerateFileEnties(fileEntry, deleteCallback);
 }
 
-bool FStreamIntf::Truncate(BlockHandle fileHeader, stream_offset newSize)
+bool FileIntfImpl::Truncate(BlockHandle fileHeader, stream_offset newSize)
 {
-	FStreamPos pos = {0};
+	FilePos pos = {0};
 	if (!Seek(fileHeader, pos, newSize))
 	{
 		LOG_ERROR("%s", "Seek failed");
@@ -416,7 +455,7 @@ bool FStreamIntf::Truncate(BlockHandle fileHeader, stream_offset newSize)
 	return true;
 }
 
-void FStreamIntf::Delete(BlockHandle fileHeader)
+void FileIntfImpl::Delete(BlockHandle fileHeader)
 {
 	FileHeader* pFileHeader = _blockReader.Get<FileHeader>(fileHeader);
 	if (!pFileHeader)
@@ -427,5 +466,62 @@ void FStreamIntf::Delete(BlockHandle fileHeader)
 	DeleteFileEntryList(pFileHeader->body);
 	_blockAllocator.Free(fileHeader);
 }
+
+// FileIntf
+
+FileIntf::FileIntf(Container& container):
+_impl(new(std::nothrow) FileIntfImpl(container))
+{
+}
+
+FileIntf::~FileIntf()
+{
+}
+
+BlockHandle FileIntf::Create()
+{
+	return _impl->Create();
+}
+
+stream_offset FileIntf::GetSize(BlockHandle fileHeader)
+{
+	return _impl->GetSize(fileHeader);
+}
+
+bool FileIntf::IsEmpty(BlockHandle fileHeader)
+{
+	return _impl->IsEmpty(fileHeader);
+}
+
+size_t FileIntf::Read(BlockHandle fileHeader, char* buff, size_t buffSize, stream_offset offset)
+{
+	return _impl->Read(fileHeader, buff, buffSize, offset);
+}
+
+bool FileIntf::Write(BlockHandle fileHeader, const char* buff, size_t buffSize, stream_offset offset)
+{
+	return _impl->Write(fileHeader, buff, buffSize, offset);
+}
+
+bool FileIntf::Append(BlockHandle fileHeader, const char * buff, size_t buffSize)
+{
+	return _impl->Append(fileHeader, buff, buffSize);
+}
+
+bool FileIntf::Truncate(BlockHandle fileHeader, stream_offset newSize)
+{
+	return _impl->Truncate(fileHeader, newSize);
+}
+
+void FileIntf::Delete(BlockHandle fileHeader)
+{
+	return _impl->Delete(fileHeader);
+}
+
+uint32_t FileIntf::GetMaxPayloadSize()
+{
+	return BlockAllocator::GetMaxAllocationSize() - sizeof(FileEntry);
+}
+
 
 }//namespace FsBox

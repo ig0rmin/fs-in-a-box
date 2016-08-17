@@ -1,4 +1,5 @@
 #include <libfsbox/FileIntf.h>
+#include <libfsbox/Container.h>
 
 #include "gtest/gtest.h"
 #include "TestUtils.h"
@@ -36,7 +37,7 @@ size_t FileIntfTestsuite::counter = 0;
 
 TEST_F(FileIntfTestsuite, WriteSimple)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -58,7 +59,7 @@ TEST_F(FileIntfTestsuite, WriteSimple)
 
 TEST_F(FileIntfTestsuite, AppendSimple)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -80,7 +81,7 @@ TEST_F(FileIntfTestsuite, AppendSimple)
 
 TEST_F(FileIntfTestsuite, Rewrite)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -104,7 +105,7 @@ TEST_F(FileIntfTestsuite, Rewrite)
 
 TEST_F(FileIntfTestsuite, RewriteWithExpand)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -128,7 +129,7 @@ TEST_F(FileIntfTestsuite, RewriteWithExpand)
 
 TEST_F(FileIntfTestsuite, ReadWithOffset)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -145,7 +146,7 @@ TEST_F(FileIntfTestsuite, ReadWithOffset)
 
 TEST_F(FileIntfTestsuite, WriteOutOfFile)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -158,7 +159,7 @@ TEST_F(FileIntfTestsuite, WriteOutOfFile)
 
 TEST_F(FileIntfTestsuite, ReadTooMuch)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -176,7 +177,7 @@ TEST_F(FileIntfTestsuite, ReadTooMuch)
 
 TEST_F(FileIntfTestsuite, ReadOnEmpty)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -188,7 +189,7 @@ TEST_F(FileIntfTestsuite, ReadOnEmpty)
 
 TEST_F(FileIntfTestsuite, TruncateSimple)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -208,7 +209,7 @@ TEST_F(FileIntfTestsuite, TruncateSimple)
 
 TEST_F(FileIntfTestsuite, TruncateAll)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -223,7 +224,7 @@ TEST_F(FileIntfTestsuite, TruncateAll)
 
 TEST_F(FileIntfTestsuite, TruncateSameSize)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -242,7 +243,7 @@ TEST_F(FileIntfTestsuite, TruncateSameSize)
 
 TEST_F(FileIntfTestsuite, AppendAndTruncate)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
@@ -264,12 +265,12 @@ TEST_F(FileIntfTestsuite, AppendAndTruncate)
 
 TEST_F(FileIntfTestsuite, WriteBigBlock)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);
 
-	const std::string buff(FStreamIntf::GetMaxPayloadSize() * 2 + 4, 'P');
+	const std::string buff(FileIntf::GetMaxPayloadSize() * 2 + 4, 'P');
 
 	EXPECT_TRUE(fileIntf.Write(file, &buff[0], buff.size(), 0));
 
@@ -281,7 +282,7 @@ TEST_F(FileIntfTestsuite, WriteBigBlock)
 
 TEST_F(FileIntfTestsuite, DeleteFile)
 {
-	FStreamIntf fileIntf(container);
+	FileIntf fileIntf(container);
 
 	BlockHandle file = fileIntf.Create();
 	EXPECT_TRUE(file);

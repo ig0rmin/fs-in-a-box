@@ -1,25 +1,24 @@
 #ifndef __FSBOX_FILE_INFT_H__
 #define __FSBOX_FILE_INFT_H__
 
-#include "BlockAllocator.h"
-#include "BlockReader.hpp"
+#include "Types.h"
 
-#include <functional>
+#include <boost/noncopyable.hpp>
+
+#include <memory>
 
 namespace FsBox
 {
 
-struct FStreamPos
-{
-	BlockHandle fileEntry;
-	stream_offset offset;;
-	size_t memOffset;
-};
+class Container;
+class FileIntfImpl;
 
-class FStreamIntf : public boost::noncopyable
+// This class by desgin has no syncronisation and no state
+class FileIntf : public boost::noncopyable
 {
 public:
-	FStreamIntf(Container& container);
+	FileIntf(Container& container);
+	virtual ~FileIntf();
 
 	BlockHandle Create();
 	stream_offset GetSize(BlockHandle fileHeader);
@@ -32,26 +31,7 @@ public:
 
 	static uint32_t GetMaxPayloadSize();
 private:
-	using EnumFileEntriesFn = bool(BlockHandle fileEntry, BlockTypes::FileEntry* pFileEntry);
-	void EnumerateFileEnties(BlockHandle fileEntry, std::function<EnumFileEntriesFn> callback);
-
-	BlockHandle NextFileEntry(BlockHandle fileEntry);
-	BlockHandle CreateFileEntry(uint32_t payloadSize);
-	size_t WriteToFileEntry(BlockHandle fileEntry, const char* buff, size_t buffSize, size_t offset);
-
-	size_t Read(FStreamPos pos, char* buff, size_t buffSize);
-	bool Write(FStreamPos pos, const char* buff, size_t buffSize);
-	bool Seek(BlockHandle fileHeader, FStreamPos& pos, stream_offset offset);
-	void SeekEnd(BlockHandle fileHeader, FStreamPos& pos);
-	
-
-	bool AppendImpl(FStreamPos pos, const char* buff, size_t buffSize);
-	bool AppendImpl(BlockHandle fileHeader, const char* buff, size_t buffSize);
-
-	void DeleteFileEntryList(BlockHandle fileEntry);
-private:
-	BlockAllocator _blockAllocator;
-	BlockReader	_blockReader;
+	std::unique_ptr<FileIntfImpl> _impl;
 };
 
 }//namespace FsBox
