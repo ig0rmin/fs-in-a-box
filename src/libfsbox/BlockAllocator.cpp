@@ -57,7 +57,7 @@ BlockHandle BlockAllocatorImpl::FindFreeBlock(uint32_t size)
 	while (freeBlock)
 	{
 		FreeBlock* pFreeBlock = _blockReader.Get<FreeBlock>(freeBlock);
-		if (!freeBlock)
+		if (!pFreeBlock)
 		{
 			LOG_ERROR("%s", "Broken link in free blocks list");
 			return 0;
