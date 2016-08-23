@@ -12,7 +12,11 @@ namespace FsBox
 namespace BlockTypes
 {
 
-enum class FileType : std::uint32_t {File, Dir, Metainfo} ;
+enum class FileType : std::uint32_t {Unknown, 
+								File,
+								Dir,
+								Metainfo} ;
+
 enum class BlockType : std::uint32_t {Unknown,
 							FreeBlock,
 							ContainerHeader,
