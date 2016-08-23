@@ -1,18 +1,21 @@
 #ifndef __FSBOX_DIRINTF_H__
 #define __FSBOX_DIRINTF_H__
 
-#include "Types.h"
-#include "BlockAllocator.h"
-#include "BlockReader.hpp"
-#include "FileIntf.h"
+#include "BlockTypes.h"
+
+#include <memory>
 
 namespace FsBox
 {
 
-class DirIntf
+class Container;
+class DirIntfImpl;
+
+class DirIntf : public boost::noncopyable
 {
 public:
 	DirIntf(Container& container);
+	virtual ~DirIntf();
 
 	BlockHandle GetRoot();
 	// Enumerate
@@ -32,31 +35,7 @@ public:
 
 	static size_t GetMaxFileName();
 private:
-	BlockReader _blockReader;
-	BlockAllocator _blockAllocator;
-	FileIntf _fileIntf;
-private:
-	// FileIntf wrappers
-	std::string FileToString(BlockHandle file);
-	BlockHandle StringToFile(const std::string& str);
-	void FreeFile(BlockHandle file);
-	// DirEntry helpers
-	BlockHandle GetDirEntry(BlockHandle dir, const std::string& name);
-	BlockTypes::FileType GetDirEntryType(BlockHandle dirEntry);
-	BlockHandle GetDirEntryBody(BlockHandle dirEntry);
-	BlockHandle GetDirEntryName(BlockHandle dirEntry);
-	BlockHandle GetNextDirEntry(BlockHandle dirEntry);
-	BlockHandle GetPrevDirEntry(BlockHandle dirEntry);
-	void SetNextDirEntry(BlockHandle dirEntry, BlockHandle next);
-	void SetPrevDirEntry(BlockHandle dirEntry, BlockHandle prev);
-	// Linked list helpers
-	void InsertDirEntry(BlockHandle dir, BlockHandle dirEntry);
-	void DeleteDirEntry(BlockHandle dir, BlockHandle dirEntry);
-	// Dir structures create/free helpers
-	BlockHandle MakeDirHeader(BlockHandle parent);
-	void FreeDirHeader(BlockHandle dir);
-	BlockHandle MakeDirEntry(BlockTypes::FileType type, BlockHandle name, BlockHandle payload);
-	void FreeDirEntry(BlockHandle dirEntry);
+	std::unique_ptr<DirIntfImpl> _impl;
 };
 
 }//namespace FsBox

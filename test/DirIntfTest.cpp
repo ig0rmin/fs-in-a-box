@@ -1,4 +1,5 @@
 #include <libfsbox/DirIntf.h>
+#include <libfsbox/Container.h>
 
 #include "gtest/gtest.h"
 #include "TestUtils.h"
