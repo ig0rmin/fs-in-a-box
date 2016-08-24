@@ -359,6 +359,11 @@ BlockHandle BlockAllocatorImpl::TryMergeLeft(BlockHandle block)
 	{
 		return block;
 	}
+	if (leftmostFreeBlock == block)
+	{
+		LOG_ERROR("%s", "Trying to free already freed block");
+		return block;
+	}
 	FreeBlock* pLeftmostFreeBlock = _blockReader.Get<FreeBlock>(leftmostFreeBlock);
 	if (!pLeftmostFreeBlock)
 	{

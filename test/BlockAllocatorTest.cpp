@@ -241,3 +241,19 @@ TEST_F(BlockAllocatorTestsuite, CheckDataConsistency)
 		EXPECT_TRUE(all_of(payloadBegin, payloadEnd, [](char ch){return ch == 'L';}));
 	}
 }
+
+TEST_F(BlockAllocatorTestsuite, FreeAlreadyFreed)
+{
+	BlockAllocator allocator(container);
+
+	BlockHandle block = allocator.Allocate(BlockAllocator::GetMinAllocationSize());
+	BlockHandle mergeGuard = allocator.Allocate(BlockAllocator::GetMinAllocationSize());
+	BlockHandle block2 = allocator.Allocate(BlockAllocator::GetMinAllocationSize());
+	
+	allocator.Free(block);
+	allocator.Free(block2);
+
+	allocator.Free(block2); // Check that we are not hanging here
+	
+	SUCCEED();
+}
