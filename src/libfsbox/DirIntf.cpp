@@ -484,6 +484,11 @@ DirIntf::~DirIntf()
 {
 }
 
+size_t DirIntf::GetMaxFileName()
+{
+	return 256;
+}
+
 BlockHandle DirIntf::GetRoot()
 {
 	return _impl->GetRoot();
@@ -532,11 +537,6 @@ BlockHandle DirIntf::CreateFile(BlockHandle dir, const std::string& name)
 bool DirIntf::DeleteFile(BlockHandle parent, const std::string& name)
 {
 	return _impl->DeleteFile(parent, name);
-}
-
-size_t DirIntf::GetMaxFileName()
-{
-	return 256;
 }
 
 }//namespace FsBox
