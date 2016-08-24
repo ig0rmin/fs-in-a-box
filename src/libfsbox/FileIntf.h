@@ -21,13 +21,13 @@ public:
 	virtual ~FileIntf();
 
 	BlockHandle Create();
-	stream_offset GetSize(BlockHandle fileHeader);
-	bool IsEmpty(BlockHandle fileHeader);
-	size_t Read(BlockHandle fileHeader, char* buff, size_t buffSize, stream_offset offset);
-	bool Write(BlockHandle fileHeader, const char* buff, size_t buffSize, stream_offset offset);
-	bool Append(BlockHandle fileHeader, const char* buff, size_t buffSize);
-	bool Truncate(BlockHandle fileHeader, stream_offset newSize);
-	void Delete(BlockHandle fileHeader);
+	stream_offset GetSize(BlockHandle file);
+	bool IsEmpty(BlockHandle file);
+	size_t Read(BlockHandle file, char* buff, size_t buffSize, stream_offset offset);
+	bool Write(BlockHandle file, const char* buff, size_t buffSize, stream_offset offset);
+	bool Append(BlockHandle file, const char* buff, size_t buffSize);
+	bool Truncate(BlockHandle file, stream_offset newSize);
+	void Delete(BlockHandle file);
 
 	static uint32_t GetMaxPayloadSize();
 private:
