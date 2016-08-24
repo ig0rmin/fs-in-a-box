@@ -149,10 +149,20 @@ BlockHandle BlockAllocatorImpl::FindInsertPoint(BlockHandle block)
 void BlockAllocatorImpl::InsertFreeBlock(BlockHandle block)
 {
 	BlockHandle insertAfter = FindInsertPoint(block);
+	if (insertAfter == block)
+	{
+		LOG_ERROR("%s", "Trying to free already freed block");
+		return;
+	}
 	if (!insertAfter)
 	{
 		ContainerHeader* containerHeader = _blockReader.Get<ContainerHeader>(0);
 		BlockHandle oldListHead = containerHeader->freeBlock;
+		if (oldListHead == block)
+		{
+			LOG_ERROR("%s", "Trying to free already freed block");
+			return;
+		}
 		FreeBlock* pBlock = _blockReader.Get<FreeBlock>(block);
 		if (!pBlock)
 		{
