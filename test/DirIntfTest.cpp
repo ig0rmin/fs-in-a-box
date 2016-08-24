@@ -1,4 +1,5 @@
 #include <libfsbox/DirIntf.h>
+#include <libfsbox/FileIntf.h>
 #include <libfsbox/Container.h>
 
 #include "gtest/gtest.h"
@@ -146,4 +147,48 @@ TEST_F(DirIntfTestsuite, DirDelete)
 	EXPECT_TRUE(dirIntf.DeleteDir(dirB, "C"));
 	EXPECT_TRUE(dirIntf.DeleteDir(root, "B"));
 	EXPECT_TRUE(dirIntf.IsEmpty(root));
+}
+
+TEST_F(DirIntfTestsuite, CreateFile)
+{
+	DirIntf dirIntf(container);
+
+	BlockHandle root = dirIntf.GetRoot();
+
+	BlockHandle dirA = dirIntf.CreateDir(root, "LevelFirst");
+	EXPECT_NE(0, dirA);
+	EXPECT_TRUE(dirIntf.IsEmpty(dirA));
+	BlockHandle fileA = dirIntf.CreateFile(dirA, "LevelFirstFile");
+	EXPECT_NE(0, fileA);
+	EXPECT_FALSE(dirIntf.IsEmpty(dirA));
+}
+
+TEST_F(DirIntfTestsuite, FileAccess)
+{
+	DirIntf dirIntf(container);
+
+	BlockHandle root = dirIntf.GetRoot();
+
+	BlockHandle dirA = dirIntf.CreateDir(root, "LevelFirst");
+	EXPECT_NE(0, dirA);
+	EXPECT_TRUE(dirIntf.IsEmpty(dirA));
+	BlockHandle fileA = dirIntf.CreateFile(dirA, "LevelFirstFile");
+	EXPECT_NE(0, fileA);
+	EXPECT_FALSE(dirIntf.IsEmpty(dirA));
+
+	FileIntf fileIntf(container);
+
+	const std::string buff = "Little brown fox";
+	EXPECT_TRUE(fileIntf.Append(fileA, &buff[0], buff.size()));
+	EXPECT_EQ(buff.size(), fileIntf.GetSize(fileA));
+
+	std::string outBuff(buff.size(), ' ');
+
+	EXPECT_TRUE(fileIntf.Read(fileA, &outBuff[0], outBuff.size(), 0));
+	EXPECT_EQ(buff, outBuff);
+
+	EXPECT_TRUE(dirIntf.DeleteFile(dirA, "LevelFirstFile"));
+	EXPECT_TRUE(dirIntf.IsEmpty(dirA));
+
+	EXPECT_FALSE(fileIntf.Read(fileA, &outBuff[0], outBuff.size(), 0));
 }
