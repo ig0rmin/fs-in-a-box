@@ -17,7 +17,7 @@ public:
 
 	BlockHandle GetRoot();
 	// Enumerate
-	using  EnumDirEntriesFn = bool(BlockHandle entry, BlockTypes::DirEntry* pDirEntry, const std::string& name); //OK
+	using  EnumDirEntriesFn = bool(BlockHandle entry, BlockTypes::DirEntry* pDirEntry, const std::string& name);
 	void EnumerateDir(BlockHandle dir, std::function<EnumDirEntriesFn> fn);
 	// Get info
 	BlockTypes::FileType GetDirEntryType(BlockHandle dir, const std::string& name);
@@ -496,7 +496,11 @@ BlockHandle DirIntf::GetRoot()
 
 void DirIntf::EnumerateDir(BlockHandle dir, std::function<EnumDirEntriesFn> fn)
 {
-	_impl->EnumerateDir(dir, fn);
+	auto enumCalbackWrapper = [&fn](BlockHandle entry, BlockTypes::DirEntry* pDirEntry, const std::string& name)
+	{
+		return fn(pDirEntry->type, name);
+	};
+	_impl->EnumerateDir(dir, enumCalbackWrapper);
 }
 
 FileType DirIntf::GetDirEntryType(BlockHandle dir, const std::string& name)

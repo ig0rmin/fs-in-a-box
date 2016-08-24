@@ -97,7 +97,7 @@ TEST_F(DirIntfTestsuite, DirEnum)
 	EXPECT_NE(0, dirB);
 
 	std::vector<std::string> dirList;
-	auto enumCallback = [&dirList](BlockHandle, BlockTypes::DirEntry*, const std::string& name)
+	auto enumCallback = [&dirList](BlockTypes::FileType type, const std::string& name)
 	{
 		dirList.push_back(name);
 		return true;

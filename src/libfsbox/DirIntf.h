@@ -19,7 +19,7 @@ public:
 
 	BlockHandle GetRoot();
 	// Enumerate
-	using  EnumDirEntriesFn = bool(BlockHandle entry, BlockTypes::DirEntry* pDirEntry, const std::string& name); //OK
+	using  EnumDirEntriesFn = bool(BlockTypes::FileType type, const std::string& name);
 	void EnumerateDir(BlockHandle dir, std::function<EnumDirEntriesFn> fn);
 	// Get info
 	BlockTypes::FileType GetDirEntryType(BlockHandle dir, const std::string& name);
