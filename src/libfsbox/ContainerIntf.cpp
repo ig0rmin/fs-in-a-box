@@ -159,4 +159,4 @@ bool ContainerIntf::TruncateFile(BlockHandle file, stream_offset newSize)
 	return _fileIntf.Truncate(file, newSize);
 }
 
-}
+}//namespace FsBox

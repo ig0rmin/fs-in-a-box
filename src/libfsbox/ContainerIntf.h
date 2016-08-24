@@ -8,7 +8,6 @@
 
 #include <unordered_map>
 
-
 namespace FsBox
 {
 
