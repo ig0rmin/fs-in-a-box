@@ -1,3 +1,7 @@
+
+#include <initguid.h>
+#include "Fs.h"
+
 #include <Windows.h>
 
 BOOL APIENTRY DllMain( HMODULE hModule,
