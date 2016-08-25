@@ -10,6 +10,8 @@ void DecrementObjCount();
 void IncrementServerLocks();
 void DecrementServerLocks();
 
+void SetModuleHandle(HMODULE hmodule);
+
 extern "C"
 {
 HRESULT __stdcall DllCanUnloadNow();
