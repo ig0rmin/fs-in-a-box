@@ -7,6 +7,7 @@
 #include "DirIntf.h"
 
 #include <unordered_map>
+#include <memory>
 
 namespace FsBox
 {
@@ -14,7 +15,7 @@ namespace FsBox
 class ContainerIntf : public boost::noncopyable
 {
 public:
-	ContainerIntf(Container& container);
+	ContainerIntf(std::shared_ptr<Container> container);
 
 	//DirIntf
 	BlockHandle GetRoot();
@@ -43,6 +44,7 @@ public:
 	bool AppendFile(BlockHandle file, const char* buff, size_t buffSize);
 	bool TruncateFile(BlockHandle file, stream_offset newSize);
 private:
+	std::shared_ptr<Container> _container;
 	std::recursive_mutex& _mutex;
 	FileIntf _fileIntf;
 	DirIntf _dirIntf;

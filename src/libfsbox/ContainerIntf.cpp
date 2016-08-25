@@ -3,10 +3,11 @@
 namespace FsBox
 {
 
-ContainerIntf::ContainerIntf(Container& container)
-:_mutex(container.GetLock()),
-_fileIntf(container),
-_dirIntf(container)
+ContainerIntf::ContainerIntf(std::shared_ptr<Container> container)
+:_container(container),
+_mutex(container->GetLock()),
+_fileIntf(*container),
+_dirIntf(*container)
 {
 }
 

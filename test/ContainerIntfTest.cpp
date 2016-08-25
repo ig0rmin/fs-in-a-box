@@ -10,23 +10,25 @@ using namespace FsBox;
 class ContainerIntfTestsuite : public testing::Test
 {
 protected:
+	ContainerIntfTestsuite():container(new(std::nothrow) Container)
+	{
+	}
 	virtual void SetUp()
 	{
 		std::ostringstream os;
 		os << "CONTAINERINTF" << counter++ << ".fsbox";
 		fileName = os.str();
-		ASSERT_TRUE(container.Open(fileName));
-		ASSERT_TRUE(container.IsOpened());
-		ASSERT_GT(container.GetFileMapping().GetFileSize(), 0);
+		ASSERT_TRUE(container->Open(fileName));
+		ASSERT_TRUE(container->IsOpened());
 	}
 
 	virtual void TearDown()
 	{
-		container.Close();
+		container->Close();
 		TestUtils::DeleteFile(fileName);
 	}
 
-	Container container;
+	std::shared_ptr<Container> container;
 	std::string fileName;
 
 	static size_t counter;
