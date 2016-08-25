@@ -1,6 +1,9 @@
 #include "FsUtils.h"
 
 #include <fstream>
+#include <iterator>
+
+#include <boost/static_assert.hpp>
 
 #include <sys/types.h>
 #include <sys/stat.h>

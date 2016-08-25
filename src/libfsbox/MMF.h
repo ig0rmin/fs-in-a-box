@@ -3,6 +3,8 @@
 
 #include "Types.h"
 
+#include <boost/iostreams/device/mapped_file.hpp>
+
 namespace FsBox
 {
 // This class workarounds bugs and limitations of boost::iostreams::mapped_file

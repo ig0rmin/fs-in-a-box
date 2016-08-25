@@ -3,6 +3,10 @@
 
 #include "BlockTypes.h"
 
+#include <boost/noncopyable.hpp>
+
+#include <string>
+#include <functional>
 #include <memory>
 
 namespace FsBox
