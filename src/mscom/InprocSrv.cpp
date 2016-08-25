@@ -99,7 +99,7 @@ STDAPI DllRegisterServer()
 	{
 		return E_FAIL;
 	}
-	// Set  InprocServer32 valude
+	// Set  InprocServer32 value
 	char moduleName[MAX_PATH] = {0};
 	DWORD moduleNameSize = GetModuleFileNameA(gDllHandle, moduleName, MAX_PATH);
 	if (!moduleNameSize)
