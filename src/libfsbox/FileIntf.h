@@ -29,7 +29,8 @@ public:
 	bool Truncate(BlockHandle file, stream_offset newSize);
 	void Delete(BlockHandle file);
 
-	static uint32_t GetMaxPayloadSize();
+	// Use it to determine best caching strategy
+	static size_t GetMaxPayloadSize();
 private:
 	std::unique_ptr<FileIntfImpl> _impl;
 };

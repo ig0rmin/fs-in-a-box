@@ -518,7 +518,7 @@ void FileIntf::Delete(BlockHandle fileHeader)
 	return _impl->Delete(fileHeader);
 }
 
-uint32_t FileIntf::GetMaxPayloadSize()
+size_t FileIntf::GetMaxPayloadSize()
 {
 	return BlockAllocator::GetMaxAllocationSize() - sizeof(FileEntry);
 }
