@@ -83,7 +83,6 @@ HRESULT FsComponent::Open(BSTR fileName, IDirectory** root)
 	{
 		return E_OUTOFMEMORY;
 	}
-	directory->AddRef();
 	*root = directory;
 	return S_OK;
 }
