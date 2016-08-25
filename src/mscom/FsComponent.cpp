@@ -83,6 +83,6 @@ HRESULT FsComponent::Open(BSTR fileName, IDirectory** root)
 	{
 		return E_OUTOFMEMORY;
 	}
-	*root = directory;
+	*root = static_cast<IDirectory*>(directory);
 	return S_OK;
 }
