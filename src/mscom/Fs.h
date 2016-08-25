@@ -5,6 +5,7 @@
 #include <unknwn.h>
 
 #undef CreateFile
+#undef CreateDirectory
 #undef DeleteFile
 
 // {1E8E9DE4-C66A-442C-868C-39BFD6DFAD00}

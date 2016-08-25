@@ -32,7 +32,7 @@ HRESULT FsClassFactory::QueryInterface(const IID& iid, void** ppv)
 		return E_NOINTERFACE;
 	}
 	reinterpret_cast<IUnknown*>(*ppv)->AddRef();
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 ULONG FsClassFactory::AddRef()
