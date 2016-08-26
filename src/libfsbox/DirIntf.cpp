@@ -10,10 +10,10 @@ using namespace FsBox::BlockTypes;
 namespace FsBox
 {
 
-class DirIntfImpl : public boost::noncopyable
+class DirIntf::Impl : public boost::noncopyable
 {
 public:
-	DirIntfImpl(Container& container);
+	Impl(Container& container);
 
 	BlockHandle GetRoot();
 	// Enumerate
@@ -58,14 +58,14 @@ private:
 	FileIntf _fileIntf;
 };
 
-DirIntfImpl::DirIntfImpl(Container& container):
+DirIntf::Impl::Impl(Container& container):
 _blockReader(container),
 _blockAllocator(container),
 _fileIntf(container)
 {
 }
 
-BlockHandle DirIntfImpl::GetRoot()
+BlockHandle DirIntf::Impl::GetRoot()
 {
 	ContainerHeader* containerHeader = _blockReader.Get<ContainerHeader>(0);
 	if (containerHeader->rootDir)
@@ -77,7 +77,7 @@ BlockHandle DirIntfImpl::GetRoot()
 	return containerHeader->rootDir = root;
 }
 
-void DirIntfImpl::EnumerateDir(BlockHandle dir, std::function<EnumDirEntriesFn> callback)
+void DirIntf::Impl::EnumerateDir(BlockHandle dir, std::function<EnumDirEntriesFn> callback)
 {
 	DirHeader* pDirHeader = _blockReader.Get<DirHeader>(dir);
 	if (!pDirHeader)
@@ -105,13 +105,13 @@ void DirIntfImpl::EnumerateDir(BlockHandle dir, std::function<EnumDirEntriesFn> 
 	}
 }
 
-FileType DirIntfImpl::GetDirEntryType(BlockHandle dir, const std::string& name)
+FileType DirIntf::Impl::GetDirEntryType(BlockHandle dir, const std::string& name)
 {
 	BlockHandle dirEntry = GetDirEntry(dir, name);
 	return GetDirEntryType(dirEntry);
 }
 
-bool DirIntfImpl::IsEmpty(BlockHandle dir)
+bool DirIntf::Impl::IsEmpty(BlockHandle dir)
 {
 	DirHeader* pDirHeader = _blockReader.Get<DirHeader>(dir);
 	if (!pDirHeader)
@@ -122,7 +122,7 @@ bool DirIntfImpl::IsEmpty(BlockHandle dir)
 	return !pDirHeader->entryList;
 }
 
-BlockHandle DirIntfImpl::OpenDir(BlockHandle parent, const std::string& name)
+BlockHandle DirIntf::Impl::OpenDir(BlockHandle parent, const std::string& name)
 {
 	BlockHandle dirEntry = GetDirEntry(parent, name);
 	if (!dirEntry)
@@ -138,7 +138,7 @@ BlockHandle DirIntfImpl::OpenDir(BlockHandle parent, const std::string& name)
 	return GetDirEntryBody(dirEntry);
 }
 
-BlockHandle DirIntfImpl::CreateDir(BlockHandle parent, const std::string& nameStr)
+BlockHandle DirIntf::Impl::CreateDir(BlockHandle parent, const std::string& nameStr)
 {
 	if (GetDirEntryType(parent, nameStr) != FileType::Unknown)
 	{
@@ -161,7 +161,7 @@ BlockHandle DirIntfImpl::CreateDir(BlockHandle parent, const std::string& nameSt
 	return dir;
 }
 
-bool DirIntfImpl::DeleteDir(BlockHandle parent, const std::string& name)
+bool DirIntf::Impl::DeleteDir(BlockHandle parent, const std::string& name)
 {
 	BlockHandle dirEntry = GetDirEntry(parent, name);
 	if (!dirEntry)
@@ -187,7 +187,7 @@ bool DirIntfImpl::DeleteDir(BlockHandle parent, const std::string& name)
 	return true;
 }
 
-BlockHandle DirIntfImpl::OpenFile(BlockHandle parent, const std::string& nameStr)
+BlockHandle DirIntf::Impl::OpenFile(BlockHandle parent, const std::string& nameStr)
 {
 	BlockHandle dirEntry = GetDirEntry(parent, nameStr);
 	if (!dirEntry)
@@ -203,7 +203,7 @@ BlockHandle DirIntfImpl::OpenFile(BlockHandle parent, const std::string& nameStr
 	return GetDirEntryBody(dirEntry);
 }
 
-BlockHandle DirIntfImpl::CreateFile(BlockHandle parent, const std::string& nameStr)
+BlockHandle DirIntf::Impl::CreateFile(BlockHandle parent, const std::string& nameStr)
 {
 	if (GetDirEntryType(parent, nameStr) != FileType::Unknown)
 	{
@@ -226,7 +226,7 @@ BlockHandle DirIntfImpl::CreateFile(BlockHandle parent, const std::string& nameS
 	return file;
 }
 
-bool DirIntfImpl::DeleteFile(BlockHandle parent, const std::string& name)
+bool DirIntf::Impl::DeleteFile(BlockHandle parent, const std::string& name)
 {
 	BlockHandle dirEntry = GetDirEntry(parent, name);
 	if (!dirEntry)
@@ -247,7 +247,7 @@ bool DirIntfImpl::DeleteFile(BlockHandle parent, const std::string& name)
 	return true;
 }
 
-std::string DirIntfImpl::FileToString(BlockHandle file)
+std::string DirIntf::Impl::FileToString(BlockHandle file)
 {
 	std::string result;
 	auto size = _fileIntf.GetSize(file);
@@ -264,7 +264,7 @@ std::string DirIntfImpl::FileToString(BlockHandle file)
 	return result;
 }
 
-BlockHandle DirIntfImpl::StringToFile(const std::string& str)
+BlockHandle DirIntf::Impl::StringToFile(const std::string& str)
 {
 	auto size = str.size();
 	if (size > DirIntf::GetMaxFileName())
@@ -280,12 +280,12 @@ BlockHandle DirIntfImpl::StringToFile(const std::string& str)
 	return file;
 }
 
-void DirIntfImpl::FreeFile(BlockHandle file)
+void DirIntf::Impl::FreeFile(BlockHandle file)
 {
 	_fileIntf.Delete(file);
 }
 
-BlockHandle DirIntfImpl::GetDirEntry(BlockHandle dir, const std::string & name)
+BlockHandle DirIntf::Impl::GetDirEntry(BlockHandle dir, const std::string & name)
 {
 	BlockHandle result = 0;
 	auto getCallback = [&name, &result](BlockHandle entry, BlockTypes::DirEntry* pDirEntry, const std::string& entryName)
@@ -301,7 +301,7 @@ BlockHandle DirIntfImpl::GetDirEntry(BlockHandle dir, const std::string & name)
 	return result;
 }
 
-BlockTypes::FileType DirIntfImpl::GetDirEntryType(BlockHandle dirEntry)
+BlockTypes::FileType DirIntf::Impl::GetDirEntryType(BlockHandle dirEntry)
 {
 	DirEntry* pDirEntry = _blockReader.Get<DirEntry>(dirEntry);
 	if (!pDirEntry)
@@ -312,7 +312,7 @@ BlockTypes::FileType DirIntfImpl::GetDirEntryType(BlockHandle dirEntry)
 	return pDirEntry->type;
 }
 
-BlockHandle DirIntfImpl::GetDirEntryBody(BlockHandle dirEntry)
+BlockHandle DirIntf::Impl::GetDirEntryBody(BlockHandle dirEntry)
 {
 	DirEntry* pDirEntry = _blockReader.Get<DirEntry>(dirEntry);
 	if (!pDirEntry)
@@ -323,7 +323,7 @@ BlockHandle DirIntfImpl::GetDirEntryBody(BlockHandle dirEntry)
 	return pDirEntry->body;
 }
 
-BlockHandle DirIntfImpl::GetDirEntryName(BlockHandle dirEntry)
+BlockHandle DirIntf::Impl::GetDirEntryName(BlockHandle dirEntry)
 {
 	DirEntry* pDirEntry = _blockReader.Get<DirEntry>(dirEntry);
 	if (!pDirEntry)
@@ -334,7 +334,7 @@ BlockHandle DirIntfImpl::GetDirEntryName(BlockHandle dirEntry)
 	return pDirEntry->name;
 }
 
-BlockHandle DirIntfImpl::GetNextDirEntry(BlockHandle dirEntry)
+BlockHandle DirIntf::Impl::GetNextDirEntry(BlockHandle dirEntry)
 {
 	DirEntry* pDirEntry = _blockReader.Get<DirEntry>(dirEntry);
 	if (!pDirEntry)
@@ -345,7 +345,7 @@ BlockHandle DirIntfImpl::GetNextDirEntry(BlockHandle dirEntry)
 	return pDirEntry->next;
 }
 
-BlockHandle DirIntfImpl::GetPrevDirEntry(BlockHandle dirEntry)
+BlockHandle DirIntf::Impl::GetPrevDirEntry(BlockHandle dirEntry)
 {
 	DirEntry* pDirEntry = _blockReader.Get<DirEntry>(dirEntry);
 	if (!pDirEntry)
@@ -356,7 +356,7 @@ BlockHandle DirIntfImpl::GetPrevDirEntry(BlockHandle dirEntry)
 	return pDirEntry->prev;
 }
 
-void DirIntfImpl::SetNextDirEntry(BlockHandle dirEntry, BlockHandle next)
+void DirIntf::Impl::SetNextDirEntry(BlockHandle dirEntry, BlockHandle next)
 {
 	DirEntry* pDirEntry = _blockReader.Get<DirEntry>(dirEntry);
 	if (!pDirEntry)
@@ -367,7 +367,7 @@ void DirIntfImpl::SetNextDirEntry(BlockHandle dirEntry, BlockHandle next)
 	pDirEntry->next = next;
 }
 
-void DirIntfImpl::SetPrevDirEntry(BlockHandle dirEntry, BlockHandle prev)
+void DirIntf::Impl::SetPrevDirEntry(BlockHandle dirEntry, BlockHandle prev)
 {
 	DirEntry* pDirEntry = _blockReader.Get<DirEntry>(dirEntry);
 	if (!pDirEntry)
@@ -378,7 +378,7 @@ void DirIntfImpl::SetPrevDirEntry(BlockHandle dirEntry, BlockHandle prev)
 	pDirEntry->prev = prev;
 }
 
-void DirIntfImpl::InsertDirEntry(BlockHandle dir, BlockHandle dirEntry)
+void DirIntf::Impl::InsertDirEntry(BlockHandle dir, BlockHandle dirEntry)
 {
 	DirHeader* pDirHeader = _blockReader.Get<DirHeader>(dir);
 	if (!pDirHeader)
@@ -399,7 +399,7 @@ void DirIntfImpl::InsertDirEntry(BlockHandle dir, BlockHandle dirEntry)
 	pDirHeader->entryList = dirEntry;
 }
 
-void DirIntfImpl::DeleteDirEntry(BlockHandle dir, BlockHandle dirEntry)
+void DirIntf::Impl::DeleteDirEntry(BlockHandle dir, BlockHandle dirEntry)
 {
 	DirHeader* pDirHeader = _blockReader.Get<DirHeader>(dir);
 	if (!pDirHeader)
@@ -429,7 +429,7 @@ void DirIntfImpl::DeleteDirEntry(BlockHandle dir, BlockHandle dirEntry)
 	}
 }
 
-BlockHandle DirIntfImpl::MakeDirHeader(BlockHandle parent)
+BlockHandle DirIntf::Impl::MakeDirHeader(BlockHandle parent)
 {
 	BlockHandle dirHeader = _blockAllocator.Allocate(sizeof(DirHeader));
 	DirHeader* pDirHeader = _blockReader.CastTo<DirHeader>(dirHeader);
@@ -443,12 +443,12 @@ BlockHandle DirIntfImpl::MakeDirHeader(BlockHandle parent)
 	return dirHeader;
 }
 
-void DirIntfImpl::FreeDirHeader(BlockHandle dir)
+void DirIntf::Impl::FreeDirHeader(BlockHandle dir)
 {
 	_blockAllocator.Free(dir);
 }
 
-BlockHandle DirIntfImpl::MakeDirEntry(BlockTypes::FileType type, BlockHandle name, BlockHandle payload)
+BlockHandle DirIntf::Impl::MakeDirEntry(BlockTypes::FileType type, BlockHandle name, BlockHandle payload)
 {
 	BlockHandle dirEntry = _blockAllocator.Allocate(sizeof(DirEntry));
 	DirEntry* pDirEntry = _blockReader.CastTo<DirEntry>(dirEntry);
@@ -463,7 +463,7 @@ BlockHandle DirIntfImpl::MakeDirEntry(BlockTypes::FileType type, BlockHandle nam
 	return dirEntry;
 }
 
-void DirIntfImpl::FreeDirEntry(BlockHandle dirEntry)
+void DirIntf::Impl::FreeDirEntry(BlockHandle dirEntry)
 {
 	BlockHandle name = GetDirEntryName(dirEntry);
 	if (name)
@@ -476,7 +476,7 @@ void DirIntfImpl::FreeDirEntry(BlockHandle dirEntry)
 }
 
 DirIntf::DirIntf(Container& container)
-:_impl(new(std::nothrow) DirIntfImpl(container))
+:_impl(new(std::nothrow) Impl(container))
 {
 }
 

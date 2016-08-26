@@ -10,10 +10,10 @@ namespace FsBox
 {
 
 //TODO: Needs review
-class BlockAllocatorImpl : public boost::noncopyable
+class BlockAllocator::Impl : public boost::noncopyable
 {
 public:
-	BlockAllocatorImpl(Container& container);
+	Impl(Container& container);
 
 	BlockHandle Allocate(uint32_t size);
 	void Free(BlockHandle block);
@@ -34,13 +34,13 @@ private:
 	BlockReader _blockReader;
 };
 
-BlockAllocatorImpl::BlockAllocatorImpl(Container& container)
+BlockAllocator::Impl::Impl(Container& container)
 :_container(container),
 _blockReader(container)
 {
 }
 
-BlockHandle BlockAllocatorImpl::NewFreeBlock(uint32_t size)
+BlockHandle BlockAllocator::Impl::NewFreeBlock(uint32_t size)
 {
 	MemoryMappedFile& mmf = _container.GetFileMapping();
 	stream_offset oldSize = mmf.GetFileSize();
@@ -50,7 +50,7 @@ BlockHandle BlockAllocatorImpl::NewFreeBlock(uint32_t size)
 	return oldSize;
 }
 
-BlockHandle BlockAllocatorImpl::FindFreeBlock(uint32_t size)
+BlockHandle BlockAllocator::Impl::FindFreeBlock(uint32_t size)
 {
 	ContainerHeader* containerHeader = _blockReader.Get<ContainerHeader>(0);
 	BlockHandle freeBlock = containerHeader->freeBlock;
@@ -71,7 +71,7 @@ BlockHandle BlockAllocatorImpl::FindFreeBlock(uint32_t size)
 	return freeBlock;
 }
 
-void BlockAllocatorImpl::PadBlock(BlockHandle block, uint32_t size)
+void BlockAllocator::Impl::PadBlock(BlockHandle block, uint32_t size)
 {
 	if (size < sizeof(FreeBlock))
 	{
@@ -95,7 +95,7 @@ void BlockAllocatorImpl::PadBlock(BlockHandle block, uint32_t size)
 	pFreeBlock->size = size;
 }
 
-BlockHandle BlockAllocatorImpl::SplitBlock(BlockHandle block, uint32_t size)
+BlockHandle BlockAllocator::Impl::SplitBlock(BlockHandle block, uint32_t size)
 {
 	if (size < sizeof(FreeBlock))
 	{
@@ -127,7 +127,7 @@ BlockHandle BlockAllocatorImpl::SplitBlock(BlockHandle block, uint32_t size)
 	return tail;
 }
 
-BlockHandle BlockAllocatorImpl::FindInsertPoint(BlockHandle block)
+BlockHandle BlockAllocator::Impl::FindInsertPoint(BlockHandle block)
 {
 	ContainerHeader* containerHeader = _blockReader.Get<ContainerHeader>(0);
 	BlockHandle freeBlock = containerHeader->freeBlock;
@@ -146,7 +146,7 @@ BlockHandle BlockAllocatorImpl::FindInsertPoint(BlockHandle block)
 	return insertAfter;
 }
 
-void BlockAllocatorImpl::InsertFreeBlock(BlockHandle block)
+void BlockAllocator::Impl::InsertFreeBlock(BlockHandle block)
 {
 	BlockHandle insertAfter = FindInsertPoint(block);
 	if (insertAfter == block)
@@ -196,7 +196,7 @@ void BlockAllocatorImpl::InsertFreeBlock(BlockHandle block)
 	}
 }
 
-BlockHandle BlockAllocatorImpl::Allocate(uint32_t sizeRequested)
+BlockHandle BlockAllocator::Impl::Allocate(uint32_t sizeRequested)
 {
 	if (sizeRequested < BlockAllocator::GetMinAllocationSize())
 	{
@@ -228,7 +228,7 @@ BlockHandle BlockAllocatorImpl::Allocate(uint32_t sizeRequested)
 	return block;
 }
 
-void BlockAllocatorImpl::UnpadBlock(BlockHandle block)
+void BlockAllocator::Impl::UnpadBlock(BlockHandle block)
 {
 	FreeBlock* pFreeBlock = _blockReader.Get<FreeBlock>(block);
 	if (!pFreeBlock)
@@ -258,7 +258,7 @@ void BlockAllocatorImpl::UnpadBlock(BlockHandle block)
 	pFreeBlock->size += padSize;
 }
 
-uint32_t BlockAllocatorImpl::GetBlockSize(BlockHandle block)
+uint32_t BlockAllocator::Impl::GetBlockSize(BlockHandle block)
 {
 	TypedBlock* pTypedBlock = _blockReader.Get<TypedBlock>(block);
 	if (!pTypedBlock)
@@ -286,7 +286,7 @@ uint32_t BlockAllocatorImpl::GetBlockSize(BlockHandle block)
 	}
 }
 
-bool BlockAllocatorImpl::Merge(BlockHandle base, BlockHandle supply)
+bool BlockAllocator::Impl::Merge(BlockHandle base, BlockHandle supply)
 {
 	FreeBlock* pSupply = _blockReader.Get<FreeBlock>(supply);
 	if (!pSupply)
@@ -335,7 +335,7 @@ bool BlockAllocatorImpl::Merge(BlockHandle base, BlockHandle supply)
 	return true;
 }
 
-void BlockAllocatorImpl::TryMergeRight(BlockHandle block)
+void BlockAllocator::Impl::TryMergeRight(BlockHandle block)
 {
 	FreeBlock* pFreeBlock = _blockReader.Get<FreeBlock>(block);
 	if (!pFreeBlock)
@@ -362,7 +362,7 @@ void BlockAllocatorImpl::TryMergeRight(BlockHandle block)
 	}
 }
 
-BlockHandle BlockAllocatorImpl::TryMergeLeft(BlockHandle block)
+BlockHandle BlockAllocator::Impl::TryMergeLeft(BlockHandle block)
 {
 	BlockHandle leftmostFreeBlock = FindInsertPoint(block);
 	if (!leftmostFreeBlock)
@@ -387,7 +387,7 @@ BlockHandle BlockAllocatorImpl::TryMergeLeft(BlockHandle block)
 	return block;
 }
 
-void BlockAllocatorImpl::Free(BlockHandle block)
+void BlockAllocator::Impl::Free(BlockHandle block)
 {
 	lock_guard<recursive_mutex> lock(_container.GetLock());
 	uint32_t blockSize = GetBlockSize(block);
@@ -411,7 +411,7 @@ void BlockAllocatorImpl::Free(BlockHandle block)
 // BlockAllocator
 
 BlockAllocator::BlockAllocator(Container& container)
-:_impl(new(nothrow) BlockAllocatorImpl(container))
+:_impl(new(nothrow) Impl(container))
 {
 }
 

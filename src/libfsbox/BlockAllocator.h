@@ -10,7 +10,6 @@
 namespace FsBox
 {
 
-class BlockAllocatorImpl;
 class Container;
 
 class BlockAllocator : public boost::noncopyable
@@ -25,7 +24,8 @@ public:
 	static uint32_t GetMinAllocationSize();
 	static uint32_t GetMaxAllocationSize();
 private:
-	std::unique_ptr<BlockAllocatorImpl> _impl;	
+	class Impl;
+	std::unique_ptr<Impl> _impl;	
 };
 
 }

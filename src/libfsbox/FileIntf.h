@@ -11,7 +11,6 @@ namespace FsBox
 {
 
 class Container;
-class FileIntfImpl;
 
 // This class by desgin has no syncronisation and no state
 class FileIntf : public boost::noncopyable
@@ -32,7 +31,8 @@ public:
 	// Use it to determine best caching strategy
 	static size_t GetMaxPayloadSize();
 private:
-	std::unique_ptr<FileIntfImpl> _impl;
+	class Impl;
+	std::unique_ptr<Impl> _impl;
 };
 
 }//namespace FsBox

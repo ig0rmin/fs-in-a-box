@@ -13,7 +13,6 @@ namespace FsBox
 {
 
 class Container;
-class DirIntfImpl;
 
 class DirIntf : public boost::noncopyable
 {
@@ -39,7 +38,8 @@ public:
 
 	static size_t GetMaxFileName();
 private:
-	std::unique_ptr<DirIntfImpl> _impl;
+	class Impl;
+	std::unique_ptr<Impl> _impl;
 };
 
 }//namespace FsBox
